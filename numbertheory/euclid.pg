@@ -1,0 +1,62 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+
+# Webwork has a built-in "gcd" that can't be overridden!
+sub euclid_gcd {
+    my ( $a, $b ) = @_;
+    if($b) {
+        my $q = int( $a / $b );
+        my $r = $a % $b;
+        # $a = ($q * $b) + $r
+        my ( $gcd, $x, $y, $iter ) = euclid_gcd( $b, $r );
+        # $gcd = $x * $b + $y * $r = $x * $b + $y * ($a - $q * $b) = $y * $a + ($x - $y * $q) * $b
+        return ($gcd, $y, $x - $y * $q , $iter + 1 );
+    } else {
+        return ($a, 1, 0, 1);
+    }
+}
+
+$iter = 10;
+
+while($iter > 5) {
+  $a = random(1,400);
+  $b = random(1,400);
+  ($gcd, $x, $y, $iter) = euclid_gcd($a, $b);
+}
+
+
+BEGIN_PGML
+Find the greatest common divisor of [$a] and [$b], along with integers [`x`] and [`y`] such that [`x \cdot [$a] + y \cdot [$b] = \gcd([$a],[$b])`].  Please do the calculation yourself on paper with the Euclidean algorithm without computer aids (other than perhaps a calculator for arithmetic), thereby maintaining your academic integrity and ensuring you actually learn the material.
+
+gcd: [_________]{$gcd}
+
+[`x`]: [_________]{$x}
+
+[`y`]: [_________]{$y}
+END_PGML
+
+ENDDOCUMENT();        

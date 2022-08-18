@@ -1,0 +1,273 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","parserRadioButtons.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 0; # Don't show which answers are correct or incorrect (multiple choice)
+
+Context("Numeric");
+
+my %ans = split('', qw/a1b0c0d0e1f1g0h1i1j0k0l1m1n1o1p0q0r1s1t0u0v0w0x1y0z0/);
+
+my @letters;
+my @propletters;
+
+my @letters_used = ();
+my %propletters_used = ();
+
+sub letter {
+    my $n = random(0,scalar(@letters)-1);
+    my $letter = $letters[$n];
+    splice(@letters,$n,1);
+    push @letters_used, $letter;
+    return $letter;
+}
+
+sub propletter {
+    my $arity = shift;
+    my $n = random(0,scalar(@propletters)-1);
+    my $letter = $propletters[$n];
+    splice(@propletters,$n,1);
+    $propletters_used{$letter} = $arity;
+    return $letter;
+}
+
+sub parens {
+    my ($paren, $inside) = @_;
+    return (($paren ? "(" : "") . $inside . ($paren ? ")" : ""));
+}
+
+$debug = "";
+
+sub printstmt {
+  my ($parens, $ast) = @_;
+  my $head = $ast->[0];
+  if($head eq 'ATOMIC') {
+    my $prop = $ast->[1];
+    my $args = join(',',@$ast[2..$#$ast]);
+    return (($english ? "[`" : "") . $prop . parens(max($#$ast-1,0),$args) . ($english ? "`]" : ""));
+  } elsif($head eq 'NOT') {
+    my $p = printstmt(1, $ast->[1]);
+    if ($english) {
+      return ($parens ? "not $p" : "it is not the case that $p");
+    } else {
+      return "\neg $p";
+    }
+  } elsif($head eq 'IMPLIES') {
+    my $p = printstmt(1, $ast->[1]);
+    my $q = printstmt(1, $ast->[2]);
+    if ($english) {
+      return ("if $p" . ($parens ? '' : ',') . " then $q");
+    } else {
+      return parens($parens,"$p \rightarrow $q");
+    }
+  } elsif($head eq 'AND') {
+    my $p = printstmt(1, $ast->[1]);
+    my $q = printstmt(1, $ast->[2]);
+    if ($english) {
+      return (($parens ? "both " : "") . "$p". ($parens ? '' :',') . " and $q");
+    } else {
+      return parens($parens,"$p \land $q");
+    }
+  } elsif($head eq 'OR') {
+    my $p = printstmt(1, $ast->[1]);
+    my $q = printstmt(1, $ast->[2]);
+    if ($english) {
+      return (($parens ? "either " : "") . $p . ($parens ? '' : ',') . " or $q");
+    } else {
+      return parens($parens,"$p \lor $q");
+    }
+  } elsif($head eq 'FORALL') {
+    my $var = $ast->[1];
+    my $p = printstmt(1, $ast->[2]);
+    if ($english) {
+      return "for all [`$var`]" . ($parens ? " we have" : ",") . " $p";
+    } else {
+      return parens($parens,"\forall $var. $p");
+    }
+  } else {                      # EXISTS
+    my $var = $ast->[1];
+    my $an = $ans{$var};
+    my $p = printstmt(1, $ast->[2]);
+    if ($english) {
+      return ("there exists " . ($an ? "an " : "a ") . "[`$var`] such that $p");
+    } else {
+      return parens($parens,"\exists $var. $p");
+    }
+  }
+}
+
+sub make_statement {
+  my ($nesting, @vars) = @_;
+  my ($p, $q);
+  if ($nesting <= 0) {
+    my $prop = propletter(scalar @vars);
+    return ['ATOMIC',$prop,@vars];
+  } else {
+    my $connective = random(0,5);
+    # $debug .= "DEBUG: nesting $nesting, connective $connective || \n";
+    if ($connective == 0) {
+      $p = make_statement($nesting - 1, @vars);
+      return ['NOT',$p];
+    } elsif ($connective == 1) {
+      my $which = random(0,1);
+      $p = make_statement($nesting - 1 - $which, @vars);
+      $q = make_statement($nesting - 2 + $which, @vars);
+      return ['IMPLIES',$p,$q];
+    } elsif ($connective == 2) {
+      my $which = random(0,1);
+      $p = make_statement($nesting - 1 - $which, @vars);
+      $q = make_statement($nesting - 2 + $which, @vars);
+      return ['AND',$p,$q];
+    } elsif ($connective == 3) {
+      my $which = random(0,1);
+      $p = make_statement($nesting - 1 - $which, @vars);
+      $q = make_statement($nesting - 2 + $which, @vars);
+      return ['OR',$p,$q];
+    } elsif ($connective == 4) {
+      my $var = letter();
+      $p = make_statement($nesting - 1, $var, @vars);
+      return ['FORALL',$var,$p];
+    } else {
+      my $var = letter();
+      $p = make_statement($nesting - 1, $var, @vars);
+      return ['EXISTS',$var,$p];
+    }
+  }
+}
+
+my $num_elts = random(2,4);     # An individual element is represented by a number from 0 to $num_elts.
+my %atomic_tvs = ();            # $atomic_tvs{'P'}{'301'} is the truth value of P(3,0,1).
+
+$elt_set_decl = "In this problem all bound variables range over the set [`\{" . join(",", 0 .. ($num_elts-1)) . "\}`]. ";
+
+sub tv_eval {
+  my ($ast, $env) = @_;
+  my $head = $ast->[0];
+  if($head eq 'ATOMIC') {
+    my $prop = $ast->[1];
+    return $atomic_tvs{$prop}{join('', map { $env->{$_} } (@$ast[2..$#$ast]))};
+  } elsif($head eq 'NOT') {
+    my $p = tv_eval($ast->[1], $env);
+    return (! $p);
+  } elsif($head eq 'IMPLIES') {
+    my $p = tv_eval($ast->[1], $env);
+    my $q = tv_eval($ast->[2], $env);
+    return ((! $p) || $q);
+  } elsif($head eq 'AND') {
+    my $p = tv_eval($ast->[1], $env);
+    my $q = tv_eval($ast->[2], $env);
+    return ($p && $q);
+  } elsif($head eq 'OR') {
+    my $p = tv_eval($ast->[1], $env);
+    my $q = tv_eval($ast->[2], $env);
+    return ($p || $q);
+  } elsif($head eq 'FORALL') {
+    my $var = $ast->[1];
+    my $new_env = { %$env };    # shallow copy
+    my $tv = 1;
+    for (my $i = 0; $i < $num_elts; ++$i) {
+      $new_env->{$var} = $i;
+      $tv &&= tv_eval($ast->[2], $new_env);
+    }
+    return $tv;
+  } else {                      # EXISTS
+    my $var = $ast->[1];
+    my $new_env = { %$env };    # shallow copy
+    my $tv = 0;
+    for (my $i = 0; $i < $num_elts; ++$i) {
+      $new_env->{$var} = $i;
+      $tv ||= tv_eval($ast->[2], $new_env);
+    }
+    return $tv;
+  }
+}
+
+$given_tvs = '';
+
+sub populate_atomic_tvs {
+  my ($prop, $arity, $prefix) = @_;
+  if (length $prefix < $arity) {
+    for(my $i = 0; $i < $num_elts; ++$i) {
+      populate_atomic_tvs($prop, $arity, $prefix . $i);
+    }
+  } else {
+    my $tv = random(0,1);
+    $atomic_tvs{$prop}{$prefix} = $tv;
+    if(length $prefix > 0) {
+      $given_tvs .= "[`$prop(" . join(',',split('',$prefix)) . ") = " . ($tv ? "\top" : "\bot") . "`]~~n~~n";
+    } else {
+      $given_tvs .= "[`$prop =" . ($tv ? "\top" : "\bot") . "`]~~n~~n";
+    }
+  }
+}
+
+@letters = split('',"xyzabcdef");
+@propletters = split('',"PQRST");
+
+# Variables visible to PGML can't be lexically scoped
+
+# $english only works with $nesting <= 2
+$english = random(0,1);
+
+sub printwrapped {
+  my ($ast) = @_;
+  if($english) {
+    return '"' . printstmt(0,$ast) . '"';
+  } else {
+    return '[`' . printstmt(0,$ast) . '`]';
+  }
+}
+
+if($english) {
+  $ast = make_statement(2);
+} else {
+  $ast = make_statement(random(2,3));
+}
+
+# Have to do this *after* creating the statements!
+foreach my $prop (keys %propletters_used) {
+  populate_atomic_tvs($prop, $propletters_used{$prop}, '');
+}
+
+$tv = tv_eval($ast, {});
+
+$mc = RadioButtons(["True", "False"], ($tv ? 0 : 1));
+
+$stmt = printwrapped($ast);
+
+BEGIN_PGML
+[$elt_set_decl]** Given the following information:
+
+[$given_tvs]**
+
+Evaluate the truth value of the statement
+
+[$stmt]**
+
+[@ $mc->buttons() @]*
+
+END_PGML
+
+ANS( $mc->cmp() );
+
+ENDDOCUMENT();

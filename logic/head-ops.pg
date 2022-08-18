@@ -1,0 +1,197 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","parserRadioButtons.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 0; # Don't show which answers are correct or incorrect (multiple choice)
+
+Context("Numeric");
+
+my $head;
+
+my %ans = split('', qw/a1b0c0d0e1f1g0h1i1j0k0l1m1n1o1p0q0r1s1t0u0v0w0x1y0z0/);
+
+my @letters;
+my @propletters;
+
+sub letter {
+    my $n = random(0,scalar(@letters)-1);
+    my $letter = $letters[$n];
+    my $letteran = $ans{$letter};
+    splice(@letters,$n,1);
+    Context()->variables->add($letter => 'Real') unless $letter eq 'x';
+    return ($letter,$letteran);
+}
+
+sub propletter {
+    my $n = random(0,scalar(@propletters)-1);
+    my $letter = $propletters[$n];
+    splice(@propletters,$n,1);
+    return $letter;
+}
+
+my $english = 0;                # Only works with nesting <= 2
+my $numbers = 0;
+my $solutions = 0;
+
+sub parens {
+    my ($paren, $inside) = @_;
+    return (($paren ? "(" : "") . $inside . ($paren ? ")" : ""));
+}
+
+my $negate = 0;
+
+sub equation {
+    # $debug .= "DEBUG: equation, negate $negate || \n";
+    if (scalar(@_)) {
+        my $var = shift;
+        return ((random(2,9) . $var) . " + " . equation(@_));
+    } else {
+      if($negate) {
+        $negate = 0;
+        return (random(1,9) . ' \neq 0');
+      } else {
+        return (random(1,9) . " = 0");
+      }
+    }
+}
+
+$debug = "";
+
+# The subroutine name "statement" is reserved by webwork
+sub make_statement {
+    my ($set_head, $parens, $nesting, @vars) = @_;
+    my ($p, $q);
+    if ($nesting <= 0) {
+        if($numbers && scalar(@vars)) {
+            if($solutions && random(0,1)) {
+              push @boundvars, 'x';
+              if($negate) {
+                $negate = 0;
+                return ("the equation [`" . equation("x",@vars) . "`] has no solution for the variable [`x`]");
+              } else {
+                return ("the equation [`" . equation("x",@vars) . "`] has a solution for the variable [`x`]");
+              }
+            } else {
+                return ("[`" . equation(@vars) . "`]");
+            }
+        } else {
+            my $args = join(',',@vars);
+            my $prop = propletter();
+            return (($english ? "[`" : "") . $prop . parens(scalar(@vars),$args) . ($english ? "`]" : ""));
+        }
+    } else {
+        my $connective = random(0,5);
+        if($set_head) {
+            $head = $connective;
+        }
+        # $debug .= "DEBUG: nesting $nesting, connective $connective || \n";
+        if($connective == 0) {
+            $negate = 1;
+            $p = make_statement(0,1,$nesting - 1, @vars);
+            if($negate) {
+              if($english) {
+                return ($parens ? "not $p" : "it is not the case that $p");
+              } else {
+                return "\neg $p";
+              }
+            } else {
+              return $p;
+            }
+        } elsif($connective == 1) {
+            my $which = random(0,1);
+            $p = make_statement(0,1,$nesting - 1 - $which, @vars);
+            $q = make_statement(0,1,$nesting - 2 + $which, @vars);
+            if($english) {
+                return ("if $p" . ($parens ? '' : ',') . " then $q");
+            } else {
+                return parens($parens,"$p \rightarrow $q");
+            }
+        } elsif($connective == 2) {
+            my $which = random(0,1);
+            $p = make_statement(0,1,$nesting - 1 - $which, @vars);
+            $q = make_statement(0,1,$nesting - 2 + $which, @vars);
+            if($english) {
+                return (($parens ? "both " : "") . "$p". ($parens ? '' :',') . " and $q");
+            } else {
+                return parens($parens,"$p \land $q");
+            }
+        } elsif($connective == 3) {
+            my $which = random(0,1);
+            $p = make_statement(0,1,$nesting - 1 - $which, @vars);
+            $q = make_statement(0,1,$nesting - 2 + $which, @vars);
+            if($english) {
+                return (($parens ? "either " : "") . $p . ($parens ? '' : ',') . " or $q");
+            } else {
+                return parens($parens,"$p \lor $q");
+            }
+        } elsif($connective == 4) {
+            my ($var,$an) = letter();
+            $p = make_statement(0,1,$nesting - 1, $var, @vars);
+            push @boundvars, $var;
+            if($english) {
+                return "for all [`$var`]" . ($parens ? " we have" : ",") . " $p";
+            } else {
+                return parens($parens,"\forall $var. $p");
+            }
+        } else {
+            my ($var,$an) = letter();
+            $p = make_statement(0,1,$nesting - 1, $var, @vars);
+            push @boundvars, $var;
+            if($english) {
+                return ("there exists " . ($an ? "an " : "a ") . "[`$var`] such that $p");
+            } else {
+                return parens($parens,"\exists $var. $p");
+            }
+        }
+    }
+}
+
+$english = random(0,1);
+$numbers = 0;
+
+@letters = split('',"xyzabcdef");
+$solutions = 0;
+@propletters = split('',"PQRST");
+
+if($english) {
+  $stmt = '"' . make_statement(1,0,2) . '"';
+} else {
+  $stmt = '[`' . make_statement(1,0,3) . '`]';
+}
+
+my $symbols = ["\(\neg\)","\(\to\)","\(\wedge\)","\(\vee\)","\(\forall\)","\(\exists\)"];
+# Variables visible from PGML can't be lexically scoped
+$mc = RadioButtons($symbols,
+                   $symbols->[$head],
+                   labels => qw/not implies and or forall exists/);
+
+BEGIN_PGML
+What is the head operator of the following statement?
+
+[$stmt]**
+
+[@ $mc->buttons() @]*
+END_PGML
+
+ANS( $mc->cmp() );
+
+ENDDOCUMENT();

@@ -1,0 +1,60 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+
+# Webwork has a built-in "gcd" that can't be overridden!
+sub euclid_gcd {
+    my ( $a, $b ) = @_;
+    if($b) {
+        my $q = int( $a / $b );
+        my $r = $a % $b;
+        # $a = ($q * $b) + $r
+        my ( $gcd, $x, $y, $iter ) = euclid_gcd( $b, $r );
+        # $gcd = $x * $b + $y * $r = $x * $b + $y * ($a - $q * $b) = $y * $a + ($x - $y * $q) * $b
+        return ($gcd, $y, $x - $y * $q , $iter + 1 );
+    } else {
+        return ($a, 1, 0, 1);
+    }
+}
+
+$iter = 10;
+
+while($iter > 5) {
+  $a = random(1,50);
+  $m = random($a+1,200);
+  ($gcd, $x, $y, $iter) = euclid_gcd($a, $m);
+}
+
+# Setting 'period' means the answer is checked to agree modulo $m rather than absolutely
+$ans = ($gcd == 1 ? Real($x)->with(period=>$m) : "NONE");
+
+BEGIN_PGML
+Find a multiplicative inverse of [$a] modulo [$m], if one exists.  If no such inverse exists, enter NONE.
+
+[_________]{$ans}
+END_PGML
+
+ENDDOCUMENT();
