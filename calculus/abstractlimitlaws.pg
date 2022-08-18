@@ -1,0 +1,51 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Limits and continuity')
+## DBsection('Rules of limits - basic')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$L = random(-20,20,.1);
+$M = non_zero_random(-20,20,.1);
+$a = random(-9,9);
+$LplusM = Real($L + $M); # Otherwise if $L==-$M then things go haywire
+$LtimesM = Real($L * $M);
+$LoverM = Real($L / $M);
+Context()->flags->set(tolerance => 0.01, tolType => 'absolute');
+
+BEGIN_PGML
+Suppose [`\lim_{x\to [$a]} f(x) = [$L]`] and [`\lim_{x\to [$a]} g(x) = [$M]`].  Find the following limits.  
+[`\lim_{x\to [$a]} (f(x) + g(x)) =`] [________]{$LplusM}  
+[`\lim_{x\to [$a]} (f(x) g(x)) =`] [________]{$LtimesM}  
+[`\lim_{x\to [$a]} \frac{f(x)}{g(x)} =`] [________]{$LoverM}  
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: By the limit laws, we have  
+[`\lim_{x\to [$a]} (f(x) + g(x)) = \left(\lim_{x\to [$a]}f(x)\right) + \left(\lim_{x\to [$a]} g(x)\right) = [$L] + [$M] = [$LplusM]`]  
+[`\lim_{x\to [$a]} (f(x) g(x)) = \left(\lim_{x\to [$a]}f(x)\right) \left(\lim_{x\to [$a]} g(x)\right) = ([$L])([$M]) = [$LtimesM]`]  
+[`\lim_{x\to [$a]} \frac{f(x)}{g(x)} = \frac{\lim_{x\to [$a]}f(x)}{\lim_{x\to [$a]}g(x)} = \frac{[$L]}{[$M]} = [$LoverM]`]  
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

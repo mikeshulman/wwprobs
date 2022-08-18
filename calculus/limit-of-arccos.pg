@@ -1,0 +1,65 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword') 
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Limits and continuity')
+## DBsection('Definitions and existence (conceptual)')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$f = Compute('arccos(x)/sqrt(1-x)');
+$sqrt2 = Compute('sqrt(2)')->with(tolerance=>0.001,tolType=>'absolute');
+$one = Compute('1');
+
+$e1 = 0.01;
+$e2 = 0.001;
+$e3 = 0.0001;
+
+sub evalwithin {
+    my ($goal,$neq,$within) = @_;
+    return sub {
+	my ($correct,$student,$ansHash) = @_;
+	if($student->value == $neq) { return 0; }
+	return (abs($f->eval(x=>$student->value) - $goal) <= $within);
+    };
+}
+
+BEGIN_PGML
+Let [`f`] be the function given by [`f(x)=[$f]`].  ([:arccos(x):] is the "inverse cosine" function, also written [`\arccos(x)`]; again, a calculator or Google can evaluate it.)
+
+Note that [`f(x)`] is only defined when [`x<1`].  By [`\lim_{x\to 1^-} f(x)`] we mean the same as [`\lim_{x\to 1} f(x)`], except that [`x`] only approaches [`1`] through values [`x<1`].
+
+What do you think [`\lim_{x\to 1^-} f(x)`] is?  Give an answer to three decimal places.  [_______]{$sqrt2}
+
+To say that [`\lim_{x\to 1^-} f(x)`] equals your answer to the previous question is to say that we can make [`f(x)`] as close as we want to your answer by choosing [`x`] sufficiently close to [`1`].  
+Find a value for [`x`] such that [`f(x)`] is within [`[$e1]`] of your first answer. [_______]  
+Find a value for [`x`] such that [`f(x)`] is within [`[$e2]`] of your first answer. [_______]  
+Find a value for [`x`] such that [`f(x)`] is within [`[$e3]`] of your first answer. [_______]  
+END_PGML
+
+ANS($one->cmp(checker => evalwithin(sqrt(2),1,$e1)));
+ANS($one->cmp(checker => evalwithin(sqrt(2),1,$e2)));
+ANS($one->cmp(checker => evalwithin(sqrt(2),1,$e3)));
+
+BEGIN_PGML_SOLUTION
+*Solution*: Evaluating [`f`] at numbers like [`0.99`] and [`0.999`], we see that the values appear to approach [`1.414`].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

@@ -1,0 +1,59 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Chain rule (without trigonometric functions)')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$a = Real(random(2,8));
+$b = Real(random(2,8));
+$c = Real(random(2,8));
+$d = Real(random(2,8));
+$x0 = Real(random(-2,2,.1));
+$y0 = $c * $x0 * $x0 + $d;
+$fy0 = Real(random(-10,10,.1));
+$fpy0 = Real(random(-10,10,.1));
+$gy0 = $a * $fy0 * $fy0 - $b * $fy0;
+$gpy0 = 2 * $a * $fy0 * $fpy0 - $b * $fpy0;
+$hx0 = $fy0;
+$hpx0 = $fpy0 * 2 * $c * $x0;
+
+BEGIN_PGML
+Let [`f`] be a function such that [`f([$y0])=[$fy0]`] and [`f'([$y0])=[$fpy0]`], and let [`g(x) = [$a] [f(x)]^2 - [$b] f(x)`] and [`h(x) = f([$c] x^2 + [$d])`].  Find the following:
+
+* [`g([$y0]) =`][_________]{$gy0}
+* [`g'([$y0]) =`][_________]{$gpy0}
+* [`h([$x0])=`][_________]{$hx0}
+* [`h'([$x0])=`][_________]{$hpx0}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*:
+* [`g([$y0]) =[$gy0]`]
+* [`g'([$y0]) = [$gpy0]`]
+* [`h([$x0])=[$fy0]`]
+* [`h'([$x0])=[$fpy0]`]
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

@@ -1,0 +1,48 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Derivatives of polynomials and power functions')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$a = Real(non_zero_random(-10,10));
+$b = Real(random(-10,10));
+$c = Real(random(-10,10));
+$d = Real(random(-10,10));
+$n = random(5,8);
+$m = random(2,4);
+$f = Compute("$a x^($n) + $b x^($m) + $c x + $d")->reduce;
+$Df = $f->D();
+
+BEGIN_PGML
+Find the derivative of [`f(x) = [$f]`]:
+
+[_____________________________]{$Df}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: [`[$Df]`].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

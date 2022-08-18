@@ -1,0 +1,94 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Integrals')
+## DBsection('Riemann sums')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+Context()->variables->add(n=>'Real');
+
+$c0 = random(1,4);
+$c1 = random(1,3);
+$c2 = 1;			# Change this if you want a quadratic
+
+sub mkf {
+  ($const,$x,$xsq) = @_;
+  return Compute("$c2*($xsq)+$c1*($x)+$c0*($const)")->reduce;
+}
+$f = mkf(1,'x','x^2');
+
+$a = Real(0);			# This value is hardcoded below too
+$b = Real(2);
+
+sub appx {
+  $n = shift;
+  $dx = ($b-$a)/$n;
+  $tot = 0;
+  for($x = $a; $x < $b; $x += $dx) {
+    $tot += $f->eval(x=>$x) * $dx;
+  }
+  return $tot;
+}
+
+$ans4 = appx(4);
+$ans8 = appx(8);
+
+# The x-value at k is (k/n)*(b-a)+a, or b*k/n since a=0
+# Adding them up for k=0...(n-1) gives
+$sumx = Compute("(n-1)*($b)/2");
+# Similarly, adding up their squares gives
+$sumxsq = Compute("($b)^2*(n-1)*n*(2n-1)/6/n^2");
+# Then we multiply by the step size (b-a)/n and evaluate the function
+$ansn = (mkf(Compute('n'),$sumx,$sumxsq) * $b / Compute('n'))->reduce;
+
+# The integral of x from 0 to b is b^2/2
+# The integral of x^2 from 0 to b is b^3/3
+$ansinf = mkf($b,($b**2)/2,($b**3)/3);
+
+BEGIN_PGML
+Let [`f(x) = [$f]`].  Using left endpoints, approximate the area under the curve [`y=f(x)`] between [`x=[$a]`] and [`x=[$b]`]...
+
+* ...by using 4 rectangles of equal width: [____________]{$ans4}
+* ...by using 8 rectangles of equal width: [____________]{$ans8}
+* ...by using [`n`] rectangles of equal width.  Your answer should now be an expression depending on the variable [`n`]: [_______________]{$ansn}
+
+You may want to use the facts that
+
+[``1+2+\dots+k = \frac{k(k+1)}{2}``]
+
+[``1^2+2^2+\dots+k^2 = \frac{k(k+1)(2k+2)}{6}``]
+
+* Now take the limit of your expression as [`n\to \infty`]: [___________]{$ansinf}
+
+END_PGML
+
+BEGIN_PGML_SOLUTION
+[$ans4]
+
+[$ans8]
+
+[$ansn]
+
+[$ansinf]
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

@@ -1,0 +1,65 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Implicit differentiation')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","parserFunction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+# In order to introduce an "arbitrary" function f into the context, we
+# actually make it a random polynomial.  This follows the same
+# principle as checking equality of functions by evaluating them at
+# many randomly chosen points.
+$fstr = "0";
+for($i = 1; $i < 10; ++$i) {
+  $fstr .= " + " . non_zero_random(0.1,0.5,.01) . " x^($i)";
+}
+parserFunction(f => $fstr);
+# We enforce that f and g satisfy the intended algebraic equality.
+# They won't satisfy the differential equation, but that's okay
+# because we don't want any derivatives appearing in the answer
+# anyway.
+parserFunction(g => "(x - f(x)^3)^(1/3)");
+
+$Dg = Formula("(1-3 f(x)^2 g(x))/(3 g(x)^2)");
+
+# We need to prevent all the test points from having x-f(x)^3 be
+# negative, since the answer checker (floating point) has trouble with
+# non-integer powers of negative numbers.  Since all the coefficients
+# of f(x) are positive and less than 0.5 and it has no constant term,
+# if x is positive then f(x) is less than 0.5(x+x^2+...) = 0.5x/(1-x),
+# and as long as x is also less than 0.5 then this is less than x, so
+# that x-f(x)^3 is positive.
+$Dg->{limits} = [0.1,0.5];
+
+BEGIN_PGML
+Suppose [`f`] and [`g`] are functions such that [`f'(x) = g(x)`] and [`f(x)^3 + g(x)^3 = x`].  Find [`g'(x)`] in terms of [`f(x)`] and [`g(x)`].
+
+[`g'(x)=`][_____________________]{$Dg}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: [`[$Dg]`].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

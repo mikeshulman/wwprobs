@@ -1,0 +1,52 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Conceptual understanding of derivatives')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","parserRadioButtons.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+$h = Compute('x^2-4 cos(x)+e^x');
+$radio = RadioButtons(
+    [[
+    "`\frac{h(3)-h(2)}{3-2}`",
+    "`h(3)-h(2)`",
+    "`3-2`",
+#    "`\frac{3-2}{h(3)-h(2)}`",
+    "`h'(2.5)`"
+    ]],
+    0
+    );
+
+BEGIN_PGML
+As in the text, suppose a dropped ball has height [`h`] at time [`t`].
+Then [`h`] is a function of [`t`], which we can write [`h(t)`].
+Without knowing a formula for [`h(t)`], which of the following represents the _average speed_ of the ball during the time from [`t=2`] to [`t=3`]?
+
+[@ $radio->buttons() @]*
+END_PGML
+
+ANS( $radio->cmp() );
+
+BEGIN_PGML_SOLUTION
+*Solution*: The average speed is the distance traveled over the time elapsed, [`\frac{h(3)-h(2)}{3-2}`].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

@@ -1,0 +1,52 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl");
+loadMacros("niceTables.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+
+# The answer to part (d) could reasonably be either 22.3 as the average of the max and min, or 21.46 as the average of all the values.
+
+BEGIN_PGML
+A tall water tower is swaying back and forth in the wind. Using an ultrasonic ranging device, we measure the distance from our device to the tower (in centimeters) every two seconds with these measurements recorded below.
+[@
+DataTable(
+[
+  [0,2,4,6,8,10,12,14,16,18,20],
+  [30.9 	,23.1 	,14.7, 	12.3, 	17.7 	,26.7, 	32.3 	,30.1 	,21.8, 	13.9 	,12.6]
+], midrules=>1)
+@]***
+
+a. On a piece of paper, create a graph of these data points.
+b. What is the water tower's maximum distance away from the device, in cm? [_____]{32.3}
+c. What is the smallest distance measured from the tower to the device, in cm? [_____]{12.3}
+d.    If the water tower was sitting still and no wind was blowing, what would be the distance from the tower to the device, in cm? We call this the tower's equilibrium position. [_____]{Real(22.3)->cmp(tolerance=>1,tolType=>'absolute')}
+e.    What is the maximum distance that the tower moves away from its equilibrium position, in cm? We call this the amplitude of the oscillations. [_____]{Real(10)->cmp(tolerance=>1,tolType=>'absolute')}
+f.    How much time does it take the water tower to sway back and forth in a complete cycle, in seconds? We call this the period of oscillation. [_____]{Real(13)->cmp(tolerance=>2,tolType=>'absolute')}
+END_PGML
+
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+ENDDOCUMENT();        

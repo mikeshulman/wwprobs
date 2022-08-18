@@ -1,0 +1,54 @@
+##DESCRIPTION
+##  Experimenting with chords and difference quotients
+##ENDDESCRIPTION
+
+##KEYWORDS()
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Conceptual understanding of derivatives')
+## Date('1/25/2016')
+## TitleText1('Calculus')
+## AuthorText1('Guichard')
+## Section1('2.1')
+## Problem1('3')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGcourse.pl","PGML.pl");
+$showPartialCorrectAnswers = 1;
+
+Context("Numeric");
+
+$a = random(2,9);
+$ap1 = $a + 0.1;
+$ap01 = $a + 0.01;
+$ap001 = $a + 0.001;
+
+$f = Compute('1/x');
+$fa = $f->eval(x=>$a);
+$fap1 = $f->eval(x=>$ap1);
+$fap01 = $f->eval(x=>$ap01);
+$fap001 = $f->eval(x=>$ap001);
+
+$dfp1 = Compute("($fap1 - $fa) / 0.1")->with(tolerance=>.001, tolType=>'absolute');
+$dfp01 = Compute("($fap01 - $fa) / 0.01")->with(tolerance=>.001, tolType=>'absolute');
+$dfp001 = Compute("($fap001 - $fa) / 0.001")->with(tolerance=>.001, tolType=>'absolute');
+
+$dfa = $f->D()->eval(x=>$a);
+
+TEXT(beginproblem());
+BEGIN_PGML
+Consider the function [`f(x) = [$f]`].  Find the slope of the chord between the following points.  Give your answers to three decimal places.
+a) [`x=[$a]`] and [`x=[$ap1]`] : [_________]{$dfp1}
+b) [`x=[$a]`] and [`x=[$ap01]`] : [_________]{$dfp01}
+c) [`x=[$a]`] and [`x=[$ap001]`] : [_________]{$dfp001}
+d) What do you think the slope of the tangent line to [`f`] probably is at the point [`[$a]`]? [_________]{$dfa}
+END_PGML
+
+BEGIN_PGML_SOLUTION
+The slopes of the chords are (to three decimal places) [$dfp1], [$dfp01], and [$dfp001].  These appear to be approaching [$dfa], which is therefore a good guess for the slope of the tangent line.
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

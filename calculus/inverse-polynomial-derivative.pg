@@ -1,0 +1,54 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Derivatives of inverse functions')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","parserFunction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$f = Compute("x^5 + x + 1");
+
+# We make g a random function so that it can appear in the answer.
+# Note that this is not quite optimal, since our random g will not
+# actually satisfy the equations f(g(x))=x and g(f(x))=x; but it seems
+# very unlikely in this case that the student would enter an answer
+# that requires using those equations to show that it is equal to
+# ours.
+$gstr = "0";
+for ($i=0;$i<10;++$i) {
+  $gstr .= " + " . random(-10,10,.1) . " x^($i)";
+}
+parserFunction(g => $gstr);
+$ans = Compute("1/(5 g(x)^4 + 1)");
+
+BEGIN_PGML
+The function [`f(x) = [$f]`] is one-to-one, so it has an inverse.  Let [`g(x)`] be its inverse; thus we have [`f(g(x))=x`] and [`g(f(x))=x`].  Find the derivative of [`g`] (in terms of [`g`] itself).
+
+[`g'(x)=`][___________________]{$ans}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: [`[$ans]`]
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

@@ -1,0 +1,56 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Definition of the derivative')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+
+loadMacros(
+   "PGstandard.pl",     # Standard macros for PG language
+   "MathObjects.pl",
+   "PGML.pl",
+   "parserFunction.pl",
+   #"source.pl",        # allows code to be displayed on certain sites.
+   "PGcourse.pl",      # Customization file for the course
+);
+$showPartialCorrectAnswers = 1;
+
+Context("Numeric");
+
+Context()->variables->add(h => 'Real');
+
+# We want the question to be about a "function variable".  The only way I can find to do that is to actually define the function in some random way so that the student is unlikely to type its actual derivative by accident.
+parserFunction("f(x)" => "sqrt(x^2+3-sin(x))");
+
+$dq = Compute("(f(x+h) - f(x))/h");
+
+TEXT(beginproblem());
+BEGIN_PGML
+Suppose that [`f`] is a function of a variable [:x:], and that [:h:] is a small change in [:x:].  What is the difference quotient?  
+[____________________]{$dq}
+END_PGML
+
+BEGIN_PGML_HINT
+The textbook writes [`\Delta x`] instead of [`h`].  In class we wrote [`\mathrm{d}x`] instead.  All of these notations are common, but they represent the same thing.
+END_PGML_HINT
+
+BEGIN_PGML_SOLUTION
+As defined on page 30, the difference quotient is [`[$dq]`].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

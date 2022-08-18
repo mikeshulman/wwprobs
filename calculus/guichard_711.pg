@@ -1,0 +1,44 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Applications of integration')
+## DBsection('Distance, velocity, acceleration')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+Context()->variables->add(t=>'Real');
+$v = Compute("2t+2");
+$s = Compute("t^2+2t+2");
+$ans = $s->eval(t=>2);
+
+BEGIN_PGML
+Suppose an object moves in a straight line so that its speed at time [`t`] is given by [`v(t) = [$v]`], and that at time [`t = 1`] the object is at position [`5`]. Find the position of the object at time [`t = 2`].
+
+[__________]{$ans}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: [$ans].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

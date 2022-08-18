@@ -1,0 +1,83 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Applications of differentiation')
+## DBsection('Linear approximation and differentials')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+Context()->flags->set(tolerance=>0.01,tolType=>'absolute');
+$x0 = Real (random (0,10,.1));
+$fx0 = Real (random(0,10,.1));
+$gx0 = Real (random(0,10,.1));
+$fpx0 = Real (random(0,10,.1));
+$gpx0 = Real (random(0,10,.1));
+$hx0 = $fx0 + $gx0;
+$kx0 = $fx0 * $gx0;
+
+$e1 = non_zero_random(-3,3) * 0.01;
+
+$x1 = $x0 + $e1;
+$fx1 = $fx0 + $fpx0 * $e1;
+$gx1 = $gx0 + $gpx0 * $e1;
+$hx1 = $fx1 + $gx1;
+$kx1 = $fx0 * $gx0 + ($fx0 * $gpx0 + $gx0 * $fpx0) * $e1;
+
+do {
+  $e2 = non_zero_random(-3,3) * 0.01;
+} while ($e2 == $e1);
+# This test is why $e1 and $e2 are not MathObjects; we want to compare them exactly, not within tolerance.
+
+$x2 = $x0 + $e2;
+$fx2 = $fx0 + $fpx0 * $e2;
+$gx2 = $gx0 + $gpx0 * $e2;
+$hx2 = $fx2 + $gx2;
+$kx2 = $fx0 * $gx0 + ($fx0 * $gpx0 + $gx0 * $fpx0) * $e2;
+
+BEGIN_PGML
+Suppose that [`h(x)=f(x)+g(x)`] and [`k(x)=f(x)g(x)`] and that we know the following:
+* [`f([$x0])=[$fx0]`]
+* [`g([$x0])=[$gx0]`]
+* [`f'([$x0])=[$fpx0]`]
+* [`g'([$x0])=[$gpx0]`]
+
+Find the following.  If it is impossible to know the value exactly, find the best possible guess given the available information.
+* [`h([$x0])=`][_________]{$hx0}
+* [`k([$x0])=`][_________]{$kx0}
+* [`h([$x1])=`][_________]{$hx1}
+* [`k([$x1])=`][_________]{$kx1}
+* [`h([$x2])=`][_________]{$hx2}
+* [`k([$x2])=`][_________]{$kx2}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: 
+* [`h([$x0])=[$hx0]`]
+* [`k([$x0])=[$kx0]`]
+* [`h([$x1])\approx h([$x0]) + h'([$x0])([$e1]) = [$hx1]`]
+* [`k([$x1])\approx k([$x0]) + k'([$x0])([$e1]) = [$kx1]`]
+* [`h([$x2])\approx h([$x0]) + h'([$x0])([$e2]) = [$hx2]`]
+* [`k([$x2])\approx k([$x0]) + k'([$x0])([$e2]) = [$kx2]`]
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

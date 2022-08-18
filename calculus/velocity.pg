@@ -1,0 +1,64 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Conceptual understanding of derivatives')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl",
+  "PGessaymacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+install_problem_grader(~~&std_problem_grader);
+
+Context("Interval");
+Context()->variables->add(t => "Real", h => "Real");
+$y = Compute('64 - 16(t-1)^2');
+$gdq = Compute('((64 - 16(t+h-1)^2) - (64 - 16(t-1)^2))/h');
+$Dy = Compute('-32t+32-16h');
+$dy = Compute('-32t+32');
+$up = Compute('[0,1)');
+$dn = Compute('(1,3]');
+
+BEGIN_PGML
+A ball is thrown upwards, starting at time [`t=0`], and its height is given by [`[$y]`].
+
+At what time does the ball reach its peak? [______]{Compute('1')}  
+At what time does the ball hit the ground again? [______]{Compute('3')}  
+Write a difference quotient representing the average velocity of the ball during the time from [`t`] to [`t+h`], and simplify as much as possible.  [____________]{$Dy}  
+What is the ball's instantaneous velocity at an arbitrary time [`t`]? [_______]{$dy}  
+On what time interval is the instantaneous velocity positive? [__________]{$up->cmp(requireParenMatch => 0)}  
+On what time interval is the instantaneous velocity negative? [__________]{$dn->cmp(requireParenMatch => 0)}
+
+Now forget about the particular equation for the height above, and suppose all we know is that a ball is thrown upwards.  If its instantaneous velocity at time [`t=4`] is negative, what do you think that means about the behavior of the ball at time [`t=4`]?  
+[@ essay_box(3,40) @]*
+END_PGML
+
+ANS( essay_cmp() );
+
+BEGIN_PGML_SOLUTION
+*SOLUTION*
+
+Since [`[$y]`] is greatest when [`t=1`] so that the subtracted term is zero, that is where the ball reaches its peak.  To find where it hits the ground, we set [`[$y]=0`] and solve to get [`t=3`].
+
+The general difference quotient is [`[$gdq]`], which simplifies to [`[$Dy]`].  As [`h`] gets very small, this approaches [`[$dy]`], so that is the instantaneous velocity at time [`t`].  Inspecting the formula, we see that it is positive for [`t<1`] and negative for [`t>1`]; since [`t`] must be greater than [`0`] (the timewhen the ball was thrown) and less than [`3`] (the time when it lands) the intervals are [`[0,1)`] and [`(1,3]`].
+
+Finally, this suggests that the instantaneous velocity is positive when the ball is going up and negative when it is going down.
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

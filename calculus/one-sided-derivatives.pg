@@ -1,0 +1,49 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Definition of the derivative')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+loadMacros("contextPiecewiseFunction.pl","parserPopUp.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("PiecewiseFunction");
+$f = Compute("2x+1 if x <= 0 else 1-x if x > 0");
+$yn = PopUp(["?", "Yes", "No"],"No");
+
+BEGIN_PGML
+Let [`f(x) = [$f]`].  Find the following limits, if they exist (if they do not, enter "DNE").
+
+Find [`\lim_{dx\to 0^-} \frac{f(0+dx)-f(0)}{dx} = `] [________]{2}  
+Find [`\lim_{dx\to 0^+} \frac{f(0+dx)-f(0)}{dx} = `] [________]{-1}  
+Find [`\lim_{dx\to 0} \frac{f(0+dx)-f(0)}{dx} = `] [________]{"DNE"}  
+
+Does [`f'(0)`] exist? [@ $yn->menu() @]*
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+ANS( $yn->cmp() );
+
+BEGIN_PGML_SOLUTION
+*Solution*: [$pi].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

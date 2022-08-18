@@ -1,0 +1,46 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Limits and continuity')
+## DBsection('Definitions and existence (conceptual)')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$a = random(2,4);
+$b = non_zero_random(-10,10);
+$e = Compute('0.001');
+$f = Compute("$a*x+$b");
+$x0 = random(3,7);
+$fx0 = $f->eval(x=>$x0);
+
+BEGIN_PGML
+Find a value of [`x`] such that [`x\neq [$x0]`], but [`[$f]`] is within [`[$e]`] of [`[$fx0]`].  
+[________]
+END_PGML
+
+ANS(Compute("$x0")->cmp(
+     checker => sub {
+       my ($correct,$student,$ansHash) = @_;  # get correct and student MathObjects
+      return ((abs($f->eval(x=>$student) - $fx0) <= $e) && ($student->value != $x0) ? 1 : 0);      # return 1 if correct, 0 otherwise
+     }
+   ));
+
+ENDDOCUMENT();        

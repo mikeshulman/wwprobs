@@ -1,0 +1,48 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Applications of Differentiation')
+## DBsection('Linear approximation and differentials')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$a = Real(non_zero_random(-10,10));
+$b = Real(non_zero_random(-10,10));
+$c = Real(non_zero_random(-10,10));
+$n = Real(non_zero_random(1,3));
+do { 
+  $m = Real(non_zero_random(1,3));
+} while ($m == $n);
+$y = Compute("$a x^($n) + $b x^($m) + $c")->reduce;
+Context()->variables->add(dx=>'Real');
+$dy = Compute("(($a)($n)x^($n-1) + ($b)($m)x^($m-1))*dx")->reduce;
+
+BEGIN_PGML
+If [`y=[$y]`], find [`\mathrm{d}y`] in terms of [`x`] and [`\mathrm{d}x`].
+
+[`\mathrm{d}y = `][_________________________]{$dy}
+END_PGML
+
+BEGIN_PGML_SOLUTION
+*Solution*: [`[$dy]`].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

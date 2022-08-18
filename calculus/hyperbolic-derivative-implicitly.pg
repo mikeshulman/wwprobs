@@ -1,0 +1,43 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Differentiation')
+## DBsection('Implicit differentiation')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+
+
+BEGIN_PGML
+The "hyperbolic sine" and "hyperbolic cosine" are functions [`\sinh(x)`] and [`\cosh(x)`] such that [`(\cosh(x))^2 - (\sinh(x))^2 = 1`].  Given that the derivative of [`\sinh(x)`] is [`\cosh(x)`], what is the derivative of [`\cosh(x)`]?
+
+_(Of course, you could just look this up on the Internet, but that way you wouldn't learn anything, so please restrain yourself and do it the way we did for the ordinary cosine.  It's good practice for the next problem, where you won't be able to look up the answer.)_
+
+[`\cosh'(x)=`][___________]{"sinh(x)"}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: [`\sinh(x)`].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

@@ -1,0 +1,44 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Integrals')
+## DBsection('Definite integrals (without trigonometric functions)')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$a = 1;
+$b = random(3,7);
+$F = Compute("x^4/4");
+$ans = $F->eval(x=>$b) - $F->eval(x=>$a);
+
+BEGIN_PGML
+Find the value of the integral [``\int_{x=1}^{[$b]} x^3 \,\mathrm{d}x``]:
+
+[_______________]{$ans}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: [$ans].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

@@ -1,0 +1,82 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Limits and continuity')
+## DBsection('Definitions and existence (conceptual)')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$a = non_zero_random(-10,10);
+$b = non_zero_random(-10,10);
+$f = Compute("$a*x+$b");
+$x0 = non_zero_random(-4,4);
+$fx0 = $f->eval(x=>$x0);
+$x0p = Compute($x0);
+$e1 = 0.1;
+$e2 = 0.01;
+$e3 = 0.001;
+
+Context()->variables->add(s=>'Real');
+$x0s = Compute("$x0 + s");
+
+sub evalwithin {
+    my ($goal,$neq,$within) = @_;
+    return sub {
+	my ($correct,$student,$ansHash) = @_;
+	if($student->value == $neq) { return 0; }
+	return (abs($f->eval(x=>$student->value) - $goal) <= $within);
+    };
+}
+
+BEGIN_PGML
+Our goal in this problem is to show that [`\lim_{x\to [$x0]} [$f] = [$fx0]`].
+
+Find a value for [`x`] such that [`x\neq [$x0]`] and [`[$f]`] is within [`[$e1]`] of [`[$fx0]`].  [_________]  
+Find a value for [`x`] such that [`x\neq [$x0]`] and [`[$f]`] is within [`[$e2]`] of [`[$fx0]`].  [_________]  
+Find a value for [`x`] such that [`x\neq [$x0]`] and [`[$f]`] is within [`[$e3]`] of [`[$fx0]`].  [_________]  
+
+Suppose that we want [`[$f]`] to be within [`s`] of [`[$fx0]`].  What value of [`x`] (in terms of [`s`]) will make this happen?  Make sure your answer is always different from [`[$x0]`] as long as [`s\neq 0`].  [____________]
+END_PGML
+
+ANS($x0p->cmp(checker=>evalwithin($fx0,$x0,$e1)));
+ANS($x0p->cmp(checker=>evalwithin($fx0,$x0,$e2)));
+ANS($x0p->cmp(checker=>evalwithin($fx0,$x0,$e3)));
+
+ANS($x0s->cmp(checker=>
+  sub {
+    $ef = Compute('e^(-s)');
+    my ($correct,$student,$ansHash) = @_;
+    for(my $i = 0; $i < 10; ++$i) {
+      $e = $ef->eval(s => random(1,10,0));
+      $v = $student->eval(s => $e);
+      $visx0 = ($v->value == $x0);
+      if($visx0) { Value->Error("Not always different from $x0"); }
+      $fv = $f->eval(x => $v);
+      if(abs($fv - $fx0) > $e) { Value->Error("At s=$e, fails to make $f within s of $fx0"); }
+    }
+    return 1;
+  }));
+
+BEGIN_PGML_SOLUTION
+*Solution*: [$pi].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        

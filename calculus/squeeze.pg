@@ -1,0 +1,45 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Limits and continuity')
+## DBsection('Squeeze theorem')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+$a = random(-4,-1);
+$b = random(1,4);
+$c = random(-5,5);
+$g = Compute("$a x^2 + $c")->reduce;
+$h = Compute("$b x^2 + $c")->reduce;
+
+BEGIN_PGML
+Suppose that [`[$g] \le f(x) \le [$h]`] for all [`x`].  Find:
+
+[``\lim_{x\to 0}\; f(x)=``][_______]{$c}
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+BEGIN_PGML_SOLUTION
+*Solution*: Since [`\lim_{x\to 0} [$g] = 0`] and [`\lim_{x\to 0} [$h] = 0`], by the Squeeze Theorem, [`\lim_{x\to 0}\; f(x)=0`] too.
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        
