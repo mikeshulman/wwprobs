@@ -1,0 +1,44 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+$x1 = random(-10,10,1);
+$y1 = random(-10,10,1);
+$x2 = $x1;
+while ($x2 == $x1) {
+    $x2 = random(-10,10,1);
+}
+$y2 = random(-10,10,1);
+
+$m = ($y2-$y1)/($x2-$x1);
+
+$eqn = Compute("$m * (x - $x1) + $y1");
+
+BEGIN_PGML
+Find an equation of the line passing through the points [``([$x1],[$y1])``] and [``([$x2],[$y2])``]:
+
+[`y = `] [_______________________________________]{$eqn}
+END_PGML
+
+ENDDOCUMENT();        
