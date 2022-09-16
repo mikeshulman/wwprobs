@@ -1,0 +1,179 @@
+## DESCRIPTION
+## Calculus
+## ENDDESCRIPTION
+
+&DOCUMENT();
+
+loadMacros(
+  "PGstandard.pl",
+#  "PGchoicemacros.pl",
+  "MathObjects.pl",
+  "PGnumericalmacros.pl",
+  "PGcourse.pl"
+);
+
+Context("Numeric"); 
+Context()->{format}{number} = "%.14g";
+
+# allow the student to change the seed for this problem.
+# $newProblemSeed = ( defined( ${$inputs_ref}{'newProblemSeed'} ) )?  ${$inputs_ref}{'newProblemSeed'} : $problemSeed;
+# $PG_random_generator->srand($newProblemSeed);
+
+# define function to be evaluated
+$a = -16;
+$b = random(1, 60, 1);
+$c = random(-5, 5, 1);
+$x0 = random(-$b/16, $b/16, .01);
+$f = sub {
+	my $x = shift;
+	$a*$x*$x + $b*$x +$c;
+};
+
+# A misleading different value for the value *at* the point
+$x1 = random(-$b/16, $b/16, .01);
+$y1 = &$f($x1);
+
+#  Calculate the cubic spline approximation
+$llimit = -5; $rlimit = 5;
+my $num_of_intervals = 500;  # number of interpolation points
+my $delta =  ($rlimit-$llimit)/($num_of_intervals); 
+my (@x_values, @y_values);
+foreach my $i (0..$num_of_intervals) {
+	my $x = $llimit + $delta*$i;
+	my $y = &$f($x);
+	push(@x_values, $x); push(@y_values,$y);
+}
+
+($t_ref, $a_ref, $b_ref, $c_ref, $d_ref) = create_cubic_spline (~~@x_values, ~~@y_values);
+
+$f_approx = cubic_spline(~~@x_values, ~~@y_values);
+
+
+HEADER_TEXT(javaScript_cubic_spline(~~@x_values,~~@y_values, name => 'func2', llimit => $llimit, rlimit => $rlimit) );
+
+TEXT(beginproblem());
+
+Context()->texStrings;
+# A warning that we are using javaScript
+TEXT(M3("",
+"\begin{rawhtml}
+<NOSCRIPT> This problem requires that Java Script be enabled </NOSCRIPT> \end{rawhtml}
+",
+"<NOSCRIPT> This problem requires that Java Script be enabled </NOSCRIPT>"
+));
+
+BEGIN_TEXT
+Below is an "oracle" function. An oracle function is a function presented interactively.  When you type in an \(x\) value, and press the --f--\(>\) button the value \(f(x)\) appears in the right hand window (or "DNE" if the function is not defined at that \(x\) value).  There are three lines, so you can calculate three different values of the function at one time.
+
+$PAR
+Use this information to approximate the limit below numerically.  Your answer must be within 0.001$PERCENT of the correct answer.  If the limit does not exist, write "DNE".
+
+$PAR
+
+\( \displaystyle \lim_{x\to $x0} f(x) \approx\) \{ans_rule(40) \}
+
+$PAR
+END_TEXT
+
+Context()->normalStrings;
+
+HEADER_TEXT(<<EOF);
+<SCRIPT LANGUAGE="JavaScript">
+<!-- Begin
+function func(x) {
+  if( x == $x0 ) {
+    return $y1
+  } else {
+    return func2(x)
+  }
+	// return $a*x*x + $b*x + $c
+}
+-->
+</SCRIPT>
+
+EOF
+
+
+$javaScript =<<ENDOFSCRIPT;
+<CENTER>
+<TABLE BORDER=4>
+<TR>
+<TH>t</TH><TH></TH><TH>f(t)</TH>
+<TR>
+<TD>
+<INPUT TYPE="text"   NAME="Input"  Value = "$x0" Size="16">
+</TD>
+<TD>
+<INPUT TYPE="button" VALUE="---f-->"  
+            OnClick="this.form.Output.value=func(this.form.Input.value);">
+</TD>
+<TD>
+<INPUT TYPE="text"   NAME="Output"   Size="30">
+</TD>
+
+</TR>
+
+<TR>
+<TD>
+<INPUT TYPE="text"   NAME="Input2"  Value = "$x0" Size="16">
+</TD>
+
+<TD>
+<INPUT TYPE="button" VALUE="---f-->"  
+            OnClick="this.form.Output2.value=func(this.form.Input2.value);">
+</TD>
+<TD>
+<INPUT TYPE="text"   NAME="Output2"   Size="30">
+</TD>
+</TR>
+
+<TR>
+<TD>
+<INPUT TYPE="text"   NAME="Input3"  Value = "$x0" Size="16">
+</TD>
+<TD>
+<INPUT TYPE="button" VALUE="---f-->"  
+            OnClick="this.form.Output3.value=func(this.form.Input3.value);">
+</TD>
+<TD>
+<INPUT TYPE="text"   NAME="Output3"   Size="30">
+</TD>
+</TR>
+</TABLE>
+
+</CENTER>
+<!-- Script Size:  1.89 KB  -->
+ENDOFSCRIPT
+
+TEXT(M3(
+     " \fbox{ The java Script calculator was displayed here
+             }",
+     "\begin{rawhtml} $javaScript \end{rawhtml}",
+      $javaScript
+      ));
+
+Context()->texStrings;      
+
+Context()->normalStrings;
+
+# The answer
+$ans = ( &$f_approx($x0) );
+
+
+$ans=Real($ans);
+ANS($ans->cmp(
+  checker => sub {
+    my ($correct,$student,$ansHash) = @_;
+    my $error = $correct - $student; 
+    my $relerror = 100000 * abs($error/$correct) unless abs($correct) <.000000001 ;
+    $relerror = 0 unless defined($relerror);
+    if ($relerror < 1){
+      return 1;
+    } else {
+      Value->Error("Incorrect");
+    }
+  }
+));
+
+			
+ENDDOCUMENT();

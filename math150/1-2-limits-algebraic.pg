@@ -1,0 +1,43 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+$a = random(-10,10,1);
+$b = random(-10,10,1);
+
+$a_times_b = $a * $b;
+$a_plus_b = $a + $b;
+
+$numer = Compute("x - $a_plus_b * x + $a_times_b")->reduce();
+$denom = Compute("x - $a");
+
+$ans = $a - $b;
+
+BEGIN_PGML
+Evaluate the following limit exactly, using algebraic simplification.  If the limit does not exist, enter "DNE".
+
+[``\lim_{x \to [$a]} \frac{[$numer]}{[$denom]} = ``] [___________________]{$ans}
+END_PGML
+
+ENDDOCUMENT();        
