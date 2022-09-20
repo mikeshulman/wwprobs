@@ -66,7 +66,7 @@ BEGIN_TEXT
 Below is an "oracle" function. An oracle function is a function presented interactively.  When you type in an \(x\) value, and press the --f--\(>\) button the value \(f(x)\) appears in the right hand window (or "DNE" if the function is not defined at that \(x\) value).  There are three lines, so you can calculate three different values of the function at one time.
 
 $PAR
-Use this information to approximate the limit below numerically.  Your answer must be within 0.001$PERCENT of the correct answer.  If the limit does not exist, write "DNE".
+Use this information to approximate the limit below numerically.  Your answer must be within 0.001$PERCENT of the correct answer (in practice, this means you should attempt to get an answer that is as precise and accurate as possible).  If the limit does not exist, write "DNE".
 
 $PAR
 

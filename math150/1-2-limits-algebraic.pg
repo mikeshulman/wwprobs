@@ -29,7 +29,7 @@ $b = random(-10,10,1);
 $a_times_b = $a * $b;
 $a_plus_b = $a + $b;
 
-$numer = Compute("x - $a_plus_b * x + $a_times_b")->reduce();
+$numer = Compute("x^2 - $a_plus_b * x + $a_times_b")->reduce();
 $denom = Compute("x - $a");
 
 $ans = $a - $b;
