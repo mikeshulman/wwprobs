@@ -23,25 +23,43 @@ loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacr
 TEXT(beginproblem()); # Print problem number and point value
 $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 
-$exp = random(2,7,1);
-$coeff = non_zero_random(-5,5);
-$coeff2 = non_zero_random(-5,5);
-$trig = random(1,2,1);
-$const = random(-12,12,1);
-if($trig == 1) {
-    $f = Compute("(e^($coeff * x) * sin($coeff2 * x) + $const)^($exp)")->reduce();
-} else {
-    $f = Compute("(e^($coeff * x) * cos($coeff2 * x) + $const)^($exp)")->reduce();
+sub term {
+  my $str = non_zero_random(-12,12);
+  if(random(1,2,1) == 1) {
+    my $exp = non_zero_random(1,4);
+    $str = "$str * x^$exp";
+  }
+  if(random(1,2,1) == 1) {
+    my $coeff = non_zero_random(-5,5);
+    $str = "$str * e^($coeff * x)";
+  }
+  if(random(1,2,1) == 1) {
+    my $coeff = non_zero_random(-5,5);
+    if(random(1,2,1) == 1) {
+      $str = "$str * sin($coeff2 * x)";
+    } else {
+      $str = "$str * cos($coeff2 * x)";
+    }
+  }
+  return $str
 }
+
+my $terms = random(1,4);
+$fstr = "0";
+for(my $i = 0; $i < $terms; $i++) {
+  my $str = term();
+  $fstr = "$fstr + $str";
+}
+$f = Compute($fstr)->reduce();
 $a = random(-7,7,0.5);
 
 $df = $f->D('x');
 $ans = $df->eval(x=>$a);
 
 BEGIN_PGML
-Let [`f(x) = [$f]`].  Find a numerical approximation of the derivative of [`f`] at [`x = [$a]`].  You may use a calculator or computer for numerical calculations, but do not use any "shortcut rules" for derivatives that you might have learned in any previous calculus class.
+Let [`f(x) = [$f]`].  Find a numerical approximation of the derivative of [`f`] at [`x = [$a]`], to within 0.01% of the exact value.  You may use a calculator or computer for numerical calculations, but do not use any "shortcut rules" for derivatives that you might have learned in any previous calculus class.
 
-[``f'([$a]) = ``] [_________________________________________________________________]{$ans}
+[``f'([$a]) \approx ``] [_________________________________________________________________]{$ans}
 END_PGML
 
 ENDDOCUMENT();        

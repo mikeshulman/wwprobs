@@ -1,0 +1,80 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl","niceTables.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+my $step = 2 ** random(-2,4,1);
+my $start = $step * random(-10,10,1);
+$xs = [['\(x\)',midrule=>1]];
+$fs = ['\(f(x)\)'];
+my $ix = random(3,5,1);
+my $count = 2 * $ix + random(-2,2,1);
+$a = $start + $step * $ix;
+my $x = $start;
+my $fval = random(-10,10,0.1) * random(1,10,1);
+my $dfval = random(-8,8,0.1) * random(1,5,1);
+my ($fprev, $fa, $fnext);
+for (my $i = 0; $i < $count; $i++) {
+  push @{$xs}, "$x";
+  push @{$fs}, "$fval";
+  if($i == $ix - 1) {
+    $fprev = $fval;
+  } elsif($i == $ix) {
+    $fa = $fval;
+  } elsif($i == $ix + 1) {
+    $fnext = $fval;
+  }
+  $fval += $dfval;
+  $dfval += random(-5,5,0.1) * random(1,5,1);
+  $fval = floor($fval * 10) / 10;
+  $x += $step;
+}
+
+$dfprev = Real( ($fa - $fprev) / $step );
+$dfnext = Real( ($fnext - $fa) / $step );
+$dfcent = Real( ($fnext - $fprev) / (2 * $step) );
+
+BEGIN_TEXT
+Shown below is a table of values of a function \(f(x)\).  Given only this information, find the best possible approximation to the derivative \(f'($a)\).
+
+\{
+DataTable(
+  [
+    $xs,
+    $fs,
+  ]
+);
+\}
+
+\(f'($a)\approx\) \{ans_rule(40) \}
+END_TEXT
+
+ANS($dfcent->cmp(
+  checker => sub {
+    my ($correct, $student, $ansHash) = @_;
+    my $sv = $student->value;
+    return (($sv == $dfprev) || ($sv == $dfnext) || ($sv == $dfcent));
+  }
+));
+
+ENDDOCUMENT();        
