@@ -123,15 +123,15 @@ $ECENTER
 Using this graph, find the following limits.  For any limit that does not exist, enter "DNE".
 $PAR
 
-\(\displaystyle\lim_{x \to $pt1} f(x) = \) \{ans_rule(40)\}
+\(\displaystyle\lim_{x \to $pt1} f(x) \approx \) \{ans_rule(40)\}
 $BR
-\(\displaystyle\lim_{x \to $pt2} f(x) = \) \{ans_rule(40)\}
+\(\displaystyle\lim_{x \to $pt2} f(x) \approx \) \{ans_rule(40)\}
 $BR
-\(\displaystyle\lim_{x \to $pt3} f(x) = \) \{ans_rule(40)\}
+\(\displaystyle\lim_{x \to $pt3} f(x) \approx \) \{ans_rule(40)\}
 $BR
-\(\displaystyle\lim_{x \to $pt4} f(x) = \) \{ans_rule(40)\}
+\(\displaystyle\lim_{x \to $pt4} f(x) \approx \) \{ans_rule(40)\}
 $BR
-\(\displaystyle\lim_{x \to $pt5} f(x) = \) \{ans_rule(40)\}
+\(\displaystyle\lim_{x \to $pt5} f(x) \approx \) \{ans_rule(40)\}
 
 END_TEXT
 
