@@ -1,0 +1,142 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('Calculus - single variable')
+## DBchapter('Limits and continuity')
+## DBsection('One-sided limits - concept of')
+## Date('1/1/2016')
+## Author('Mike Shulman')
+## Institution('University of San Diego')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","contextFraction.pl","contextPiecewiseFunction.pl","parserPopUp.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");
+$x0 = Real(random(-8,5));
+$x2 = Real(random($x0+1,8));
+do { $x1 = Real(random(-8,8)) } while ($x1 == $x0 or $x1 == $x2);
+
+$limx0left = Real(random(-8,8));
+$m0 = Real(random(-3,3));
+$b0 = - $m0 * $x0 + $limx0left;
+$f0 = Compute("$m0 * x + $b0")->reduce();
+
+$limx2right = Real(random(-8,8));
+$m2 = Real(random(-3,3));
+$b2 = - $m2 * $x2 + $limx2right;
+$f2 = Compute("$m2 * x + $b2")->reduce();
+
+$lim0exists = random(0,1);
+if ($lim0exists) {
+  $limx0right = $limx0left;
+} else {
+  $limx0right = Real(random(-8,8));
+  $lim0exists = ($limx0right == $limx0left);
+}
+if ($lim0exists xor !random(0,2)) {
+  do { $fx0 = Real(random(-8,8)) } while ($fx0 == $limx0left);
+  @fstart = ("x < $x0" => $f0, "x = $x0" => $fx0);
+  $x0isleft = 1;
+} else {
+  $x0isleft = random(0,1);
+  if ($x0isleft) {
+    @fstart = ("x <= $x0" => $f0);
+  } else {
+    @fstart = ("x < $x0" => $f0);
+  }
+}
+
+$lim2exists = random(0,1);
+if ($lim2exists) {
+  $limx2left = $limx2right;
+} else {
+  $limx2left = Real(random(-8,8));
+  $lim2exists = ($limx2right == $limx2left);
+}
+if ($lim2exists xor !random(0,2)) {
+  do { $fx2 = Real(random(-8,8)) } while ($fx2 == $limx2left);
+  @fend = ("x = $x2" => $fx2, "x > $x2" => $f2);
+  $x2isright = 1;
+} else {
+  $x2isright = random(0,1);
+  if ($x2isright) {
+    @fend = ("x >= $x2" => $f2);
+  } else {
+    @fend = ("x > $x2" => $f2);
+  }
+}
+
+$m1 = Fraction(($limx2left - $limx0right) / ($x2 - $x0));
+$b1 = Fraction(- $m1 * $x0 + $limx0right);
+$f1 = Compute("(($m1) * x + $b1)")->reduce;
+
+@fmid = (("$x0 <" . ($x0isleft ? "" : "=") . " x <" . ($x2isright ? "" : "=") . " $x2") => $f1);
+
+# By parsing the pieces in Fraction context above and passing them to PiecewiseFunction as a hash rather than a string to be parsed, we keep them as fractions even though we have to change the context now.
+Context("PiecewiseFunction");
+$f = PiecewiseFunction(@fstart, @fmid, @fend);
+
+Context("Fraction");
+$limx0 = ($lim0exists ? $limx0left : "DNE");
+$cont0 = ($lim0exists ? (Real($f->eval(x => $x0)) == $limx0) : 0);
+$fx1 = Real($f->eval(x => $x1));
+$cont1 = 1;
+$limx2 = ($lim2exists ? $limx2left : "DNE");
+$cont2 = ($lim2exists ? (Real($f->eval(x => $x2)) == $limx2) : 0);
+
+sub shuffle {
+  my @in = @{$_[0]};
+  my @out;
+  for (my $lgth = @in; $lgth > 0; $lgth--) {
+    my $ix = random(0 , $lgth - 1);
+    push @out, $in[$ix];
+    splice @in, $ix, 1;
+  }
+  return ~~@out;
+}
+
+# Randomize the order
+$limits = [ [$x0, $limx0, $cont0], [$x1, $fx1, $cont1], [$x2, $limx2, $cont2] ];
+$shuflim = shuffle($limits);
+($xl0, $xl1, $xl2) = @{$shuflim};
+($xx0, $limxx0, $contx0) = @{$xl0};
+($xx1, $limxx1, $contx1) = @{$xl1};
+($xx2, $limxx2, $contx2) = @{$xl2};
+
+$popup0 = PopUp(['?', 'Yes', 'No'], ($contx0 ? 'Yes' : 'No'));
+$popup1 = PopUp(['?', 'Yes', 'No'], ($contx1 ? 'Yes' : 'No'));
+$popup2 = PopUp(['?', 'Yes', 'No'], ($contx2 ? 'Yes' : 'No'));
+
+BEGIN_PGML
+Consider the function [``f(x) = [$f]``]
+
+* [``\lim_{x\to[$xx0]} \; f(x) =``][__________]{$limxx0}   Is [`f(x)`] continuous at [`x = [$xx0]`]?  [_]{$popup0}
+* [``\lim_{x\to[$xx1]} \; f(x) =``][__________]{$limxx1}   Is [`f(x)`] continuous at [`x = [$xx1]`]?  [_]{$popup1}
+* [``\lim_{x\to[$xx2]} \; f(x) =``][__________]{$limxx2}   Is [`f(x)`] continuous at [`x = [$xx2]`]?  [_]{$popup2}
+
+For limits that do not exist, enter "DNE".
+END_PGML
+# relative tolerance --3.1412 is incorrect but 3.1413 is correct
+# default tolerance is .01 or one percent.
+
+# BEGIN_PGML_SOLUTION
+# *Solution*:
+
+# * [`\lim_{x\to[$x0]^-} f(x) = [$limx0left]`] and [`\lim_{x\to[$x0]^+} f(x) = [$limx0right]`], so [`\lim_{x\to[$x0]} f(x) = [$limx0]`].
+# * [`\lim_{x\to[$x2]^-} f(x) = [$limx2left]`] and [`\lim_{x\to[$x2]^+} f(x) = [$limx2right]`], so [`\lim_{x\to[$x2]} f(x) = [$limx2]`].
+# * [`\lim_{x\to[$x1]} f(x) = [$fx1]`]
+# END_PGML_SOLUTION
+
+ENDDOCUMENT();
