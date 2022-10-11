@@ -1,0 +1,147 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGgraphmacros.pl","PGcourse.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+my $numcrit = random(3,5,1);
+my $crits = [];
+my $coeffs;
+if (random (0,1,1) == 0) {
+  $coeffs = [1];
+} else {
+  $coeffs = [-1];
+}
+my $ncoeffs = 1;
+for (my $i = 0; $i < $numcrit; $i++) {
+  my $crit = random(-5,5,0.05);
+  push @{$crits}, $crit;
+  my $newcoeffs = [];
+  $ncoeffs++;
+  for (my $j = 0; $j < $ncoeffs; $j++) {
+    my $c = 0;
+    if($j < $ncoeffs - 1) {
+      $c += $coeffs->[$j] * $crit;
+    }
+    if($j > 0) {
+      $c -= $coeffs->[$j-1];
+    }
+    push @{$newcoeffs}, $c;
+  }
+  $coeffs = $newcoeffs;
+}
+my $anticoeffs = [];
+for (my $j = 0; $j < $ncoeffs; $j++) {
+  push @{$anticoeffs}, $coeffs->[$j] / ($j + 1);
+}
+$fstr = "0";
+for (my $j = 0; $j < $ncoeffs; $j++) {
+  $c = $anticoeffs->[$j];
+  $fstr = "$fstr + $c * x ^ ($j+1)";
+}
+$f = Compute($fstr);
+
+my $min = min($f->eval(x => -5), $f->eval(x => 5));
+my $max = max($f->eval(x => -5), $f->eval(x => 5));
+for (my $i = 0; $i < $numcrit; $i++) {
+  $max = max($max, $f->eval(x => $crits->[$i]));
+  $min = min($min, $f->eval(x => $crits->[$i]));
+}
+my $span = $max - $min;
+my $mid = ($max + $min) / 2;
+my $scale = 9 / $span;
+$fstr = "($fstr - $mid) * $scale";
+$f = Compute($fstr);
+
+$df = $f->D('x');
+
+$gr = init_graph(-5, -5, 5, 5,
+                 axes=>[0,0],
+                 grid=>[10,10],
+                 size=>[400,400]
+                );
+
+add_functions($gr, "$fstr for x in <-5,5> using color:blue");
+
+$pt1 = random(-4,4,1);
+$pt2 = $pt1;
+while ($pt2 == $pt1) {
+  $pt2 = random(-4,4,1);
+}
+$pt3 = $pt1;
+while ($pt3 == $pt1 || $pt3 == $pt2) {
+  $pt3 = random(-4,4,1);
+}
+
+Context()->flags->set(
+  tolerance => 0.5,
+  tolType => "relative",
+);
+
+$ans1 = $df->eval(x=>$pt1);
+$ans2 = $df->eval(x=>$pt2);
+$ans3 = $df->eval(x=>$pt3);
+
+BEGIN_TEXT
+Here is the graph of a function \(f\).  The grid lines are spaced 1 unit apart.
+
+$BCENTER
+\{ image( insertGraph($gr), 
+width=>500,height=>500,tex_size=>800 ) \}
+$ECENTER
+
+Using this graph, estimate the following derivatives.  For any derivative that does not exist, enter "DNE".
+$PAR
+
+\(f^\prime($pt1) \approx \) \{ans_rule(40)\}
+$BR
+\(f^\prime($pt2) \approx \) \{ans_rule(40)\}
+$BR
+\(f^\prime($pt3) \approx \) \{ans_rule(40)\}
+
+END_TEXT
+
+sub mychecker {
+  my ($correct,$student,$ansHash) = @_;
+  return 0 unless (defined $student && defined $correct);
+  if(abs($correct->value) > 0.3) {
+    my $err = $student->value - $correct->value;
+    if($err == 0) {
+      return 1;
+    }
+    my $cmp = log(abs($err / max(abs($correct->value), 0.02))) / abs(max(abs($correct->value), 0.02));
+    return ($cmp < -0.2 ? 1 : 0);
+  } elsif (Real(0) == $student->value) {
+    return 1;
+  } elsif ($correct->value / $student->value < 0) {
+    return 0;
+  } else {
+    return (abs($student->value) < 0.6 ? 1 : 0);
+  }
+}
+
+# The ~~s are Webworks' version of a backslash, used to get references.
+ANS($ans1->cmp(checker => ~~&mychecker));
+ANS($ans2->cmp(checker => ~~&mychecker));
+ANS($ans3->cmp(checker => ~~&mychecker));
+
+ENDDOCUMENT();
