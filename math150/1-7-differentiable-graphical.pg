@@ -44,6 +44,7 @@ $diff = 1;
 $had_a_discontinuity = 0;
 $min = $start_val;
 $max = $start_val;
+$first = 1;
 while(@pts) {
   $b = shift(@pts);
 
@@ -56,7 +57,7 @@ while(@pts) {
   $m = ($end_deriv - $start_deriv) / ($b - $a);
   $cts = random(0,3,1);
   $const = $start_val - $start_deriv * $a;
-  if($cts == 0) {
+  if($cts == 0 && $first == 0) {
     if($had_a_discontinuity == 1) {
       # No more than one discontinuity
       $cts = 1;
@@ -82,7 +83,7 @@ while(@pts) {
   $min = min($min, $start_val);
   $max = max($max, $start_val);
 
-  $rel_ext_at = $start_deriv / $m - $a;
+  $rel_ext_at = $a - $start_deriv / $m;
   if($a < $rel_ext_at && $rel_ext_at < $b) {
     $rel_ext = $f->eval(x => $rel_ext_at);
     $min = min($min, $rel_ext);
@@ -119,9 +120,10 @@ while(@pts) {
   }
 
   $a = $b;
+  $first = 0;
 }
 
-$gr = init_graph(-4,$min,4,$max,
+$gr = init_graph(-4, floor($min - 0.1), 4, ceil($max + 0.1),
                  axes=>[0,0],
                  grid=>[8],
                  size=>[400,400]
