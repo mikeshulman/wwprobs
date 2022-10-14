@@ -1,0 +1,50 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+$x0 = random(-4,4,1);
+$fx0 = random(-9,9,1);
+$dfx0 = random(-8,8,1);
+$L = Compute("$fx0 + $dfx0 * (x - $x0)");
+
+$delta1 = non_zero_random(-0.2,0.2,0.01);
+$x1 = $x0 + $delta1;
+$Lx1 = $L->eval(x => $x1);
+
+$delta2 = $delta1;
+while($delta2 == $delta1) {
+  $delta2 = non_zero_random(-0.2,0.2,0.01);
+}
+$x2 = $x0 + $delta2;
+$Lx2 = $L->eval(x => $x2);
+
+BEGIN_PGML
+Suppose [`f`] is a function such that [`f([$x0]) = [$fx0]`] and [`f'([$x0]) = [$dfx0]`].  Estimate the following values of [`f`] using a linear approximation:
+
+[``f([$x1]) \approx``] [____________________________________]{$Lx1}
+
+[``f([$x2]) \approx``] [____________________________________]{$Lx2}
+END_PGML
+
+ENDDOCUMENT();
