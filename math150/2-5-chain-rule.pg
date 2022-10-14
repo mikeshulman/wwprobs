@@ -1,0 +1,106 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
+Context()->variables->add(y => "Real");
+Context()->flags->set(limits=>[2,5]);
+
+# sub testable {
+#   my $f = shift;
+#   my $count = 0;
+#   for (my $i = 0; $i < 100; $i++) {
+#     $x = random(2,5,0.0001);
+    
+#   }
+# }
+
+sub make_func {
+  my ($poly_ok, $power_ok) = @_;
+  $min = -1;
+  $min = 1 if !$poly_ok;
+  $min = 5 if !$power_ok;
+  my $type = random($min,8,1);
+  my $is_power = ($type <= 4);
+  my $f;
+  if($type <= 0) {
+    my $e1 = random(3,20,1);
+    my $e2 = random(0,10,1);
+    my $a1 = random(-8,8,1);
+    my $a2 = random(-8,8,1);
+    my $a3 = random(-8,8,1);
+    $f = Compute("$a1 * x^$e1 + $a2 * x^$e2 + $a3");
+  } elsif($type <= 2) {
+    my $exponent = non_zero_random(-2,7,1);
+    $f = Compute("x^$exponent");
+  } elsif($type <= 3) {
+    $f = Compute("sqrt(x)");
+  } elsif($type <= 4) {
+    my $exponent = Fraction(1,random(3,7,1));
+    $f = Compute("x^y")->substitute(y => $exponent);
+  } elsif($type <= 5) {
+    $f = Compute("e^x");
+  } elsif($type <= 6) {
+    my $base = random(2,8,1);
+    $f = Compute("$base^x");
+  } elsif($type <= 8) {
+    my $trigf = random(1,11,1);
+    if   ($trigf <= 3)  { $f = Compute("sin(x)"); }
+    elsif($trigf <= 6)  { $f = Compute("cos(x)"); }
+    elsif($trigf <= 8)  { $f = Compute("tan(x)"); }
+    elsif($trigf <= 9)  { $f = Compute("sec(x)"); }
+    elsif($trigf <= 10) { $f = Compute("csc(x)"); }
+    else                { $f = Compute("cot(x)"); }
+  }
+  return $f, $is_power;
+}
+
+sub make_composite {
+  my $num = shift;
+  if($num <= 1) {
+    my ($fn, $fnpow) = make_func(1,1);
+    return $fn, $fnpow;
+  }
+  my ($inn, $innpow) = make_composite($num - 1);
+  my ($out, $outpow) = make_func(0, !$innpow);
+  return $out->substitute(x => $inn), $outpow;
+}
+
+$len = max(random(0,3,1),2);
+($f, $fpow) = make_composite($len);
+$f = $f->reduce();
+$df = $f->D('x')->reduce();
+
+Context()->texStrings;
+BEGIN_TEXT
+Find the derivative of the function \( f(x) = ${f} \).
+
+$PAR
+
+\(f'(x) = \) \{ans_rule(40)\}
+END_TEXT
+
+ANS($df->cmp());
+
+ENDDOCUMENT();
