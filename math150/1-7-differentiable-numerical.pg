@@ -297,8 +297,8 @@ Context()->texStrings;
 Context()->normalStrings;
 
 install_problem_grader(~~&custom_problem_grader_fluid);
-$ENV{'grader_numright'} = [1,2,3,4,5];
-$ENV{'grader_scores'} = [0.2,0.4,0.6,0.8,1];
+$ENV{'grader_numright'} = [1,2,3];
+$ENV{'grader_scores'} = [0.34,0.67,1];
 
 $showPartialCorrectAnswers = 0;
 
