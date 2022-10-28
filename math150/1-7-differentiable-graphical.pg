@@ -65,6 +65,7 @@ while(@pts) {
       # Not continuous
       $had_a_discontinuity = 1;
       while($const == $start_val - $start_deriv * $a) {
+          # In this case, $start_val is no longer actually the starting value.
         $const = random(-3,3,1);
       }
     }
@@ -74,15 +75,17 @@ while(@pts) {
 
   $f = Compute($fn);
 
-  # Check both the start and end of this interval, since there may be discontinuities
-  $end_val = $f->eval(x => $a);
-  $min = min($min, $end_val);
-  $max = max($max, $end_val);
+  # Reset $start_val to the *actual* starting value, to compute the maximum and minimum (for scaling).
+  $start_val = $f->eval(x => $a);
+  $min = min($min, $start_val);
+  $max = max($max, $start_val);
 
+  # Now we set $start_val to the starting value of the *next* interval, and incorporate that in the max/min calculation.
   $start_val = $f->eval(x => $b);
   $min = min($min, $start_val);
   $max = max($max, $start_val);
 
+  # We should also look at relative extrema to find the (absolute) maximum and minimum.
   $rel_ext_at = $a - $start_deriv / $m;
   if($a < $rel_ext_at && $rel_ext_at < $b) {
     $rel_ext = $f->eval(x => $rel_ext_at);
@@ -111,10 +114,14 @@ while(@pts) {
     while($start_deriv == $end_deriv) {
       if($end_deriv >= 2) {
         $start_deriv = random(-3,0,1);
+      } elsif($end_deriv > 0) {
+        $start_deriv = random(-4,-1,1);
       } elsif($end_deriv <= -2) {
         $start_deriv = random(0,3,1);
+      } elsif($end_deriv < 0) {
+        $start_deriv = random(1,4,1);
       } else {
-        $start_deriv = random(2,4,1) * non_zero_random(-1,1,1);
+        $start_deriv = random(3,5,1) * non_zero_random(-1,1,1);
       }
     }
   }
@@ -122,8 +129,10 @@ while(@pts) {
   $a = $b;
   $first = 0;
 }
+$min = floor($min - 0.1);
+$max = ceil($max + 0.1);
 
-$gr = init_graph(-4, floor($min - 0.1), 4, ceil($max + 0.1),
+$gr = init_graph(-4, $min, 4, $max,
                  axes=>[0,0],
                  grid=>[8],
                  size=>[400,400]
