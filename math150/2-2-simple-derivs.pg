@@ -31,23 +31,23 @@ sub make_term {
   my $type = random(0,10,1);
   if($type <= 2) {
     my $exponent = non_zero_random(-2,7,1);
-    $f = Compute("x^$exponent");
+    $f = Formula("x^$exponent");
   } elsif($type <= 3) {
-    $f = Compute("sqrt(x)");
+    $f = Formula("sqrt(x)");
   } elsif($type <= 4) {
     my $exponent = Fraction(1,random(3,7,1));
-    $f = Compute("x^y")->substitute(y => $exponent);
+    $f = Formula("x^y")->substitute(y => $exponent);
   } elsif($type <= 5) {
-    $f = Compute("e^x");
+    $f = Formula("e^x");
   } elsif($type <= 6) {
     my $base = random(2,8,1);
-    $f = Compute("$base^x");
+    $f = Formula("$base^x");
   } elsif($type <= 7) {
-    $f = Compute("sin(x)");
+    $f = Formula("sin(x)");
   } elsif($type <= 8) {
-    $f = Compute("cos(x)");
+    $f = Formula("cos(x)");
   } else {
-    $f = non_zero_random(-15,15,1);
+    $f = Formula(non_zero_random(-15,15,1));
   }
   my $coefftype = random(1,5,1);
   my $coeff = 1;
