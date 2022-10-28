@@ -25,70 +25,80 @@ $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 
 Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
 Context()->variables->add(y => "Real");
-Context()->flags->set(limits=>[2,5]);
 
-# sub testable {
-#   my $f = shift;
-#   my $count = 0;
-#   for (my $i = 0; $i < 100; $i++) {
-#     $x = random(2,5,0.0001);
-    
-#   }
-# }
+# A big problem here is getting webwork to be able to generate
+# sufficient random sample points for comparison to check answers.
+# Ideally I'd like to just generate functions and check whether they
+# have enough sample points, repeating until we get an ok one, but I
+# haven't been able to figure out a good way to check whether a
+# function has enough sample points in advance.
+
+# Current "solution" is to set these limits relatively carefully:
+Context()->flags->set(limits=>[0.01, 1.5]);
+# and then do a little tracking of positive/negative values.
+# Specifically, each make_func can be told whether it's "okay to be
+# negative", which it then more or less obeys, and can also return
+# whether its input is allowed to be negative which is passed on to
+# inner functions of compositions.  This would work great except for
+# trig functions, but I'm hoping that issues won't be prevalent.
 
 sub make_func {
-  my ($poly_ok, $power_ok) = @_;
+  my ($poly_ok, $power_ok, $neg_ok) = @_;
   $min = -1;
   $min = 1 if !$poly_ok;
   $min = 5 if !$power_ok;
   my $type = random($min,8,1);
   my $is_power = ($type <= 4);
   my $f;
+  my $input_neg_ok = 1;
   if($type <= 0) {
     my $e1 = random(3,20,1);
     my $e2 = random(0,10,1);
-    my $a1 = random(-8,8,1);
-    my $a2 = random(-8,8,1);
-    my $a3 = random(-8,8,1);
-    $f = Compute("$a1 * x^$e1 + $a2 * x^$e2 + $a3");
+    my $lb = ($neg_ok ? -8 : 0);
+    my $a1 = random($lb,8,1);
+    my $a2 = random($lb,8,1);
+    my $a3 = random($lb,8,1);
+    $f = Formula("$a1 * x^$e1 + $a2 * x^$e2 + $a3");
   } elsif($type <= 2) {
     my $exponent = non_zero_random(-2,7,1);
-    $f = Compute("x^$exponent");
+    $f = Formula("x^$exponent");
   } elsif($type <= 3) {
-    $f = Compute("sqrt(x)");
+    $input_neg_ok = 0;
+    $f = Formula("sqrt(x)");
   } elsif($type <= 4) {
     my $exponent = Fraction(1,random(3,7,1));
-    $f = Compute("x^y")->substitute(y => $exponent);
+    $input_neg_ok = 0;
+    $f = Formula("x^y")->substitute(y => $exponent);
   } elsif($type <= 5) {
-    $f = Compute("e^x");
+    $f = Formula("e^x");
   } elsif($type <= 6) {
     my $base = random(2,8,1);
-    $f = Compute("$base^x");
+    $f = Formula("$base^x");
   } elsif($type <= 8) {
     my $trigf = random(1,11,1);
-    if   ($trigf <= 3)  { $f = Compute("sin(x)"); }
-    elsif($trigf <= 6)  { $f = Compute("cos(x)"); }
-    elsif($trigf <= 8)  { $f = Compute("tan(x)"); }
-    elsif($trigf <= 9)  { $f = Compute("sec(x)"); }
-    elsif($trigf <= 10) { $f = Compute("csc(x)"); }
-    else                { $f = Compute("cot(x)"); }
+    if   ($trigf <= 3)  { $f = Formula("sin(x)"); }
+    elsif($trigf <= 6)  { $f = Formula("cos(x)"); }
+    elsif($trigf <= 8)  { $f = Formula("tan(x)"); }
+    elsif($trigf <= 9)  { $f = Formula("sec(x)"); }
+    elsif($trigf <= 10) { $f = Formula("csc(x)"); }
+    else                { $f = Formula("cot(x)"); }
   }
-  return $f, $is_power;
+  return $f, $is_power, $input_neg_ok;
 }
 
 sub make_composite {
-  my $num = shift;
+  my ($num, $pow_ok, $neg_ok) = @_;
   if($num <= 1) {
-    my ($fn, $fnpow) = make_func(1,1);
-    return $fn, $fnpow;
+    my ($fn, $fnpow, $inner_neg_ok) = make_func(1, $pow_ok, $neg_ok);
+    return $fn;
   }
-  my ($inn, $innpow) = make_composite($num - 1);
-  my ($out, $outpow) = make_func(0, !$innpow);
-  return $out->substitute(x => $inn), $outpow;
+  my ($out, $outpow, $out_neg_ok) = make_func(0, $pow_ok, $neg_ok);
+  my $inn = make_composite($num - 1, !$outpow, $out_neg_ok);
+  return $out->substitute(x => $inn);
 }
 
 $len = max(random(0,3,1),2);
-($f, $fpow) = make_composite($len);
+($f, $fpow) = make_composite($len, 1, -1000, 1000);
 $f = $f->reduce();
 $df = $f->D('x')->reduce();
 
