@@ -1,0 +1,78 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl","niceTables.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+my $step = 2 ** random(-2,4,1);
+my $start = $step * random(-10,10,1);
+$xs = [['\(t\)',midrule=>1]];
+$fs = ['\(v(t)\)'];
+my $ix1 = random(3,5,1);
+my $ix2 = $ix1 + random(2,4,1);
+my $count = 2 * $ix2 + random(-2,2,1);
+$a = $start + $step * $ix1;
+$b = $start + $step * $ix2;
+my $x = $start;
+my $dfval = random(-8,8,0.1) * random(1,5,1);
+$riemL = Real(0);
+$riemR = Real(0);
+for (my $i = 0; $i < $count; $i++) {
+  push @{$xs}, "$x";
+  push @{$fs}, "$dfval";
+  if(($i >= $ix1) && ($i < $ix2)) {
+    $riemL += $dfval * $step;
+  }
+  if(($i > $ix1) && ($i <= $ix2)) {
+    $riemR += $dfval * $step;
+  }
+  $dfval += random(-5,5,0.1) * random(1,5,1);
+  $dfval = round($dfval,1);
+  $x += $step;
+}
+
+$riemM = ($riemL + $riemR) / 2;
+
+BEGIN_TEXT
+Shown below is a table of measurements of the velocity \(v(t)\) of a moving object at different times.  Given only this information, find a good approximation to the displacement of the object over the interval \([$a,$b]\).
+
+\{
+DataTable(
+  [
+    $xs,
+    $fs,
+  ]
+);
+\}
+
+Displacement \(\approx\) \{ans_rule(40) \}
+END_TEXT
+
+ANS($riemM->cmp(
+  checker => sub {
+    my ($correct, $student, $ansHash) = @_;
+    my $sv = $student->value;
+    return (($sv == $riemL) || ($sv == $riemM) || ($sv == $riemR));
+  }
+));
+
+ENDDOCUMENT();
