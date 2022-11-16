@@ -1,0 +1,169 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
+Context()->variables->add(y => "Real");
+Context()->noreduce('(-x)-y');
+
+
+# TODO: This is incomplete.  It might technically work right now, but the functions we get are yuckky.  Better would be to generate functions that are "naturally" zero.
+
+
+Context()->flags->set(limits=>[2,5]);
+# Need to be smarter than this: ensure that we can check complicated
+# functions nested *inside* functions like roots and logarithms that
+# have restricted domain.
+
+# This isn't the only problem either, I've seen functions like
+# 7^(x^10+8^x) give the "can't generate enough valid points for
+# comparison" error.  Maybe because the numbers get too big?
+
+sub make_func {
+    my ($poly_ok, $power_ok) = @_;
+    my ($f, $ispoly, $ispower) = (undef, 0, 0);
+    my $type = random(1 + 6 * (1 - $power_ok), 12 + (6 * $poly_ok), 1);
+    if($type <= 4) {
+        my $exponent = random(2,10,1);
+        $f = Compute("x^$exponent");
+        $ispower = 1;
+    } elsif($type <= 5) {
+        $f = Compute("sqrt(x)");
+    } elsif($type <= 6) {
+        my $exponent = Fraction(1,random(3,7,1));
+        $f = Compute("x^y")->substitute(y => $exponent);
+        $ispower = 1;
+    } elsif($type <= 7) {
+        $f = Compute("e^x");
+    } elsif($type <= 8) {
+        my $base = random(2,8,1);
+        $f = Compute("$base^x");
+    } elsif($type <= 10) {
+        $f = Compute("ln(x)");
+    } elsif($type <= 12) {
+        my $trigf = random(1,11,1);
+        if   ($trigf <= 3)  { $f = Compute("sin(x)"); }
+        elsif($trigf <= 6)  { $f = Compute("cos(x)"); }
+        # Other trig functions are rarer than sin and cos
+        elsif($trigf <= 8)  { $f = Compute("tan(x)"); }
+        elsif($trigf <= 9)  { $f = Compute("sec(x)"); }
+        elsif($trigf <= 10) { $f = Compute("csc(x)"); }
+        else                { $f = Compute("cot(x)"); }
+    } else {
+        # Polynomial
+        my $sparse = random(1,4,1);
+        my $degree, $terms, @degrees, @coeffs;
+        if($sparse <= 3) {
+            $degree = random(1,3,1);
+            $terms = $degree + 1;
+            @degrees = (0..$degree);
+            @coeffs = ();
+            for(my $i = 0; $i <= $degree; $i++) {
+                $coeffs[$i] = non_zero_random(-9,9,1);
+            }
+        } else {
+            $terms = random(2,3,1);
+            @degrees = ();
+            @coeffs = ();
+            for(my $i = 0; $i < $terms; $i++) {
+                $coeffs[$i] = non_zero_random(-9,9,1);
+                $degrees[$i] = random(9,30,1);
+            }
+        }
+        my $poly = "";
+        for(my $i = 0; $i < $terms; $i++) {
+            $poly = "+ ($coeffs[$i])* x^($degrees[$i]) $poly";
+        }
+        $f = Compute($poly)->reduce();
+        $ispoly = 1;
+    }
+    return ($f, $ispoly, $ispower);
+}
+
+sub make_nested {
+  my ($depth, $poly_ok, $power_ok) = @_;
+  my ($haspoly, $ispower);
+  if($depth <= 1) {
+    ($nested, $haspoly, $ispower) = make_func($poly_ok, $power_ok);
+  } else {
+    my $type = random(0, 6, 1);
+    if($type <= 2) {
+      # Composition
+      my ($f, $f_haspoly, $f_ispower) = make_func(0, $power_ok); # Outer function can't be a polynomial
+      my ($g, $g_haspoly, $g_ispower) = make_nested($depth - 1, $poly_ok, !$f_ispower);
+      $nested = $f->substitute(x => $g);
+      $haspoly = $g_haspoly;
+      $ispower = $f_ispower;
+    } else {
+      # Exactly one of the combinands should be extra-simple (depth goes down by two)
+      my $g_simple = random(1,2,1);
+      my $f_simple = 3 - $g_simple;
+      my ($f, $f_haspoly) = make_nested($depth - $f_simple, $poly_ok);
+      # If f is a polynomial, g shouldn't be
+      $poly_ok &&= !$f_haspoly;
+      my ($g, $g_haspoly) = make_nested($depth - $g_simple, $poly_ok);
+      $haspoly = $f_haspoly || $g_haspoly;
+      $ispower = 0;
+      if   ($type <= 3) { $nested = $f + $g }
+      elsif($type <= 4) { $nested = $f - $g }
+      else              { $nested = $f * $g }
+    }
+  }
+  return ($nested, $haspoly, $ispower);
+}
+
+($f, $fhaspoly, $fispower) = make_nested(2,1,1);
+($g, $ghaspoly, $gispower) = make_nested(2,1,1);
+
+$x0 = random(-5,5,1);
+
+$fx0 = $f->eval(x=>$x0);
+$gx0 = $g->eval(x=>$x0);
+
+$f = $f - $fx0;
+$g = $g - $gx0;
+
+$f = $f->reduce();
+$g = $g->reduce();
+
+$fg = $f / $g;
+
+$df = $f->D('x');
+$dg = $g->D('x');
+$dfx0 = 0;
+$dgx0 = 0;
+
+while($dfx0 == 0 && $dgx0 == 0) {
+  $dfx0 = $df->eval(x=>$x0);
+  $dgx0 = $dg->eval(x=>$x0);
+}
+$lim = $dfx0 / $dgx0;
+
+BEGIN_PGML
+Find the limit:
+
+[``\lim_{x\to [$x0]} [$fg] = ``] [_______________________________________]{$lim}
+END_PGML
+
+ENDDOCUMENT();
