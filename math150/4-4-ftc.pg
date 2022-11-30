@@ -1,0 +1,111 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
+Context()->variables->add(y => "Real");
+Context()->flags->set(limits=>[2,5]);
+
+sub make_term {
+  my $allow_negatives = 1;
+
+  my $coefftype = random(1,5,1);
+  my $coeff = 1;
+  if($coefftype <= 3) {
+    $coeff = non_zero_random(-9,9,1);
+  }
+
+  my $type = random(0,10,1);
+  if($type <= 2) {
+    my $exponent = non_zero_random(-3,7,1);
+    $f = Formula("$coeff * x^$exponent");
+    if ($exponent == -1) {
+      $F = Formula("$coeff * ln(x)");
+    } else {
+      $F = Formula("($coeff / ($exponent + 1)) * x^($exponent+1)");
+    }
+    if ($exponent < 0) {
+      $allow_negatives = 0;       # Can't integrate across an asymptote!
+    }
+  } elsif($type <= 3) {
+    $f = Formula("$coeff * sqrt(x)");
+    $F = Formula("$coeff * 2/3 * x^(3/2)");
+    $allow_negatives = 0;
+  } elsif($type <= 4) {
+    my $exponent = Fraction(1,random(3,7,1));
+    $f = Formula("$coeff * x^y")->substitute(y => $exponent);
+    $F = Formula("$coeff / (y+1) * x^(y+1)")->substitute(y => $exponent);
+    $allow_negatives = 0;
+  } elsif($type <= 5) {
+    $f = Formula("$coeff * e^x");
+    $F = Formula("$coeff * e^x");
+  } elsif($type <= 6) {
+    my $base = random(2,8,1);
+    $f = Formula("$coeff * $base^x");
+    $F = Formula("$coeff / ln($base) * $base^x");
+  } elsif($type <= 7) {
+    $f = Formula("$coeff * sin(x)");
+    $F = Formula("- $coeff * cos(x)");
+  } elsif($type <= 8) {
+    $f = Formula("$coeff * cos(x)");
+    $F = Formula("$coeff * sin(x)");
+  } else {
+    $f = Formula(non_zero_random(-15,15,1));
+    $F = "$f x";
+  }
+  return ($f, $F, $allow_negatives);
+}
+
+sub make_func {
+  my $terms = shift;
+  my $allow_negatives = 1;
+  if($terms <= 1) {
+    my ($term, $anti, $negs) = make_term();
+    return ($term, $anti, $negs);
+  }
+  my ($term1, $anti1, $negs1) = make_term();
+  my ($term2, $anti2, $negs2) = make_func($terms - 1);
+  return ($term1 + $term2, $anti1 + $anti2, $negs1 && $negs2);
+}
+
+($f, $F, $allow_negatives) = make_func(random(1,3,1));
+$f = $f->reduce();
+$F = $F->reduce();
+
+if($allow_negatives) {
+  $a = random(-5,3,1);
+} else {
+  $a = random(1,6,1);
+}
+$b = $a + random(1,7,1);
+
+$ans = $F->eval(x => $b) - $F->eval(x => $a);
+
+BEGIN_PGML
+Use the Fundamental Theorem of Calculus to find the net signed area bounded by the function [`f(x) = [$f]`], the [``x``]-axis, and the lines [`x = [$a]`] and [`x = [$b]`].
+
+[``\int_{[$a]}^{[$b]} \big([$f]\big) \, dx  = ``] [_______________________________________]{$ans}
+END_PGML
+
+ENDDOCUMENT();
