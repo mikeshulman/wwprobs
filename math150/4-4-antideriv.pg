@@ -93,13 +93,6 @@ sub make_func {
 $f = $f->reduce();
 $F = $F->reduce();
 
-if($allow_negatives) {
-  $a = random(-5,3,1);
-} else {
-  $a = random(1,6,1);
-}
-$b = $a + random(1,7,1);
-
 Context()->texStrings;
 BEGIN_TEXT
 Find an antiderivative of the function \( f(x) = $f \).  (Any single antiderivative will do; you do not have to specify the most general one.)

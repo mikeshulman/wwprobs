@@ -39,40 +39,40 @@ sub make_term {
   my $type = random(0,10,1);
   if($type <= 2) {
     my $exponent = non_zero_random(-3,7,1);
-    $f = Formula("$coeff * x^$exponent");
+    $f = Formula("$coeff  x^$exponent");
     if ($exponent == -1) {
-      $F = Formula("$coeff * ln(x)");
+      $F = Formula("$coeff  ln(x)");
     } else {
-      $F = Formula("($coeff / ($exponent + 1)) * x^($exponent+1)");
+      $F = Formula("($coeff / ($exponent + 1))  x^($exponent+1)");
     }
     if ($exponent < 0) {
       $allow_negatives = 0;       # Can't integrate across an asymptote!
     }
   } elsif($type <= 3) {
-    $f = Formula("$coeff * sqrt(x)");
-    $F = Formula("$coeff * 2/3 * x^(3/2)");
+    $f = Formula("$coeff  sqrt(x)");
+    $F = Formula("$coeff  2/3  x^(3/2)");
     $allow_negatives = 0;
   } elsif($type <= 4) {
     my $exponent = Fraction(1,random(3,7,1));
-    $f = Formula("$coeff * x^y")->substitute(y => $exponent);
-    $F = Formula("$coeff / (y+1) * x^(y+1)")->substitute(y => $exponent);
+    $f = Formula("$coeff  x^y")->substitute(y => $exponent);
+    $F = Formula("$coeff x^(y+1) / (y+1)")->substitute(y => $exponent);
     $allow_negatives = 0;
   } elsif($type <= 5) {
-    $f = Formula("$coeff * e^x");
-    $F = Formula("$coeff * e^x");
+    $f = Formula("$coeff  e^x");
+    $F = Formula("$coeff  e^x");
   } elsif($type <= 6) {
     my $base = random(2,8,1);
-    $f = Formula("$coeff * $base^x");
-    $F = Formula("$coeff / ln($base) * $base^x");
+    $f = Formula("$coeff  $base^x");
+    $F = Formula("$coeff $base^x / ln($base)");
   } elsif($type <= 7) {
-    $f = Formula("$coeff * sin(x)");
-    $F = Formula("- $coeff * cos(x)");
+    $f = Formula("$coeff  sin(x)");
+    $F = Formula("- $coeff  cos(x)");
   } elsif($type <= 8) {
-    $f = Formula("$coeff * cos(x)");
-    $F = Formula("$coeff * sin(x)");
+    $f = Formula("$coeff  cos(x)");
+    $F = Formula("$coeff  sin(x)");
   } else {
     $f = Formula(non_zero_random(-15,15,1));
-    $F = "$f x";
+    $F = Formula("$f x");
   }
   return ($f, $F, $allow_negatives);
 }
