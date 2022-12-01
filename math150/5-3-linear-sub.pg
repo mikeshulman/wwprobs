@@ -1,0 +1,55 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl","parserFormulaUpToConstant.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context()->variables->add(a => "Real", C => "Real");
+Context()->flags->set(limits=>[2,5]);
+
+$param = random(4,9,1);
+@outers = qw|1/x sqrt(x) e^x sin(x) cos(x) sec^2(x) csc^2(x) a^x x^a|;
+@antis = qw|ln(x) 2x^(3/2)/3 e^x -cos(x) sin(x) tan(x) -cot(x) a^x/ln(a) x^(a+1)/(1+a)|;
+$numouters = @outers;
+$i = random(0,$numouters-1,1);
+
+if($i <= 1) {
+  $coeff = random(1,8,1);
+  $const = random(0,9,1);
+} else {
+  $coeff = non_zero_random(-8,8,1);
+  $const = random(-9,9,1);
+}
+$inner = Formula("$coeff x + $const")->reduce();
+
+$f = Formula($outers[$i])->substitute(a => $param, x => $inner);
+$F = Formula($antis[$i] . "/ $coeff + C")->substitute(a => $param, x => $inner);
+
+Context()->texStrings;
+BEGIN_PGML
+Find the indefinite integral.  Use [`+C`] for the arbitrary constant.
+
+[``\int [$f] \, dx =``] [_______________________________________]{$F->cmp(upToConstant => 1)}
+END_PGML
+# ANS( $F->cmp(upToConstant => 1));
+
+ENDDOCUMENT();
