@@ -25,6 +25,7 @@ $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 
 Context()->variables->add(a => "Real", C => "Real");
 Context()->flags->set(limits=>[2,5]);
+Context()->noreduce('(-x)-y');
 
 $param = random(4,9,1);
 @outers = qw|1/x sqrt(x) e^x sin(x) cos(x) sec^2(x) csc^2(x) a^x x^a|;

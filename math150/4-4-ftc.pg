@@ -26,6 +26,7 @@ $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
 Context()->variables->add(y => "Real");
 Context()->flags->set(limits=>[2,5]);
+Context()->noreduce('(-x)-y');
 
 sub make_term {
   my $allow_negatives = 1;
