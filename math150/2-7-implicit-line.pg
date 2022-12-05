@@ -1,0 +1,80 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context()->variables->add(y => "Real");
+Context()->flags->set(limits=>[0.01, 1.5]);
+
+sub make_term {
+  my $coeff = non_zero_random(-3,3,1);
+  my $a = random(0,3,1);
+  my $b = random(0,3,1);
+  return Formula("$coeff x^($a) y^($b)");
+}
+
+Context()->noreduce("(-x)-y");
+
+$lct = random(1,2,1);
+$left = Formula(0);
+for($i = 0; $i < $lct; $i++) {
+  $left = $left + make_term();
+}
+$rct = random(1,2,1);
+$right = Formula(0);
+for($i = 0; $i < $rct; $i++) {
+  $right = $right + make_term();
+}
+$left = $left->reduce();
+$right = $right->reduce();
+
+$x0 = non_zero_random(-2,2,1);
+$y0 = non_zero_random(-2,2,1);
+$left0 = $left->eval(x => $x0, y => $y0);
+$right0 = $right->eval(x => $x0, y => $y0);
+
+$f0 = $left0 - $right0;
+
+$f = $right - $left + $f0;
+
+$dfx = $f->D('x')->reduce();
+$dfy = $f->D('y')->reduce();
+
+$dydx = - $dfx / $dfy;
+
+$m0 = $dydx->eval(x => $x0, y => $y0);
+
+$tanln = Formula("$y0 + $m0*(x - $x0)");
+
+Context()->texStrings;
+BEGIN_TEXT
+Given the equation \( $left = $right + $f0 \) which expresses \(y\) as an implicit function of \(x\), find an equation of the tangent line to its graph at the point \(($x0,$y0)\).
+
+$PAR
+
+\(y = \) \{ans_rule(40)\}
+END_TEXT
+
+ANS($tanln->cmp());
+
+ENDDOCUMENT();
