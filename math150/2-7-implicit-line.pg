@@ -70,7 +70,7 @@ if($dfy == 0) {
 
 Context()->texStrings;
 BEGIN_TEXT
-Given the equation \( $left = $right + $f0 \) which expresses \(y\) as an implicit function of \(x\), find an equation of the tangent line to its graph at the point \(($x0,$y0)\).  If the tangent line is vertical, or the equation does not define a curve with a tangent line, enter NONE.
+Given the equation \( $left = $right + $f0 \) which expresses \(y\) as an implicit function of \(x\), find an equation of the tangent line to its graph at the point \(($x0,$y0)\).  If the tangent line is vertical, enter NONE.
 
 $PAR
 
