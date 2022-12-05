@@ -60,15 +60,17 @@ $f = $right - $left + $f0;
 $dfx = $f->D('x')->reduce();
 $dfy = $f->D('y')->reduce();
 
-$dydx = - $dfx / $dfy;
-
-$m0 = $dydx->eval(x => $x0, y => $y0);
-
-$tanln = Formula("$y0 + $m0*(x - $x0)");
+if($dfy == 0) {
+    $tanln = String("none");
+} else {
+    $dydx = - $dfx / $dfy;
+    $m0 = $dydx->eval(x => $x0, y => $y0);
+    $tanln = Formula("$y0 + $m0*(x - $x0)");
+}
 
 Context()->texStrings;
 BEGIN_TEXT
-Given the equation \( $left = $right + $f0 \) which expresses \(y\) as an implicit function of \(x\), find an equation of the tangent line to its graph at the point \(($x0,$y0)\).
+Given the equation \( $left = $right + $f0 \) which expresses \(y\) as an implicit function of \(x\), find an equation of the tangent line to its graph at the point \(($x0,$y0)\).  If the tangent line is vertical, or the equation does not define a curve with a tangent line, enter NONE.
 
 $PAR
 
