@@ -23,10 +23,7 @@ loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacr
 TEXT(beginproblem()); # Print problem number and point value
 $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 
-Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
-Context()->variables->add(y => "Real");
-Context()->flags->set(limits=>[2,5]);
-Context()->noreduce('(-x)-y');
+Context("Numeric");
 
 sub make_term {
   my $allow_negatives = 1;
@@ -54,9 +51,13 @@ sub make_term {
     $F = Formula("$coeff  2/3  x^(3/2)");
     $allow_negatives = 0;
   } elsif($type <= 4) {
+    # We use a fraction context so that the fraction exponents can be displayed as fractions rather than as decimals.
+    Context("Fraction");
     my $exponent = Fraction(1,random(3,7,1));
+    Context()->variables->add(y => "Real");
     $f = Formula("$coeff  x^y")->substitute(y => $exponent);
     $F = Formula("$coeff x^(y+1) / (y+1)")->substitute(y => $exponent);
+    Context("Numeric");
     $allow_negatives = 0;
   } elsif($type <= 5) {
     $f = Formula("$coeff  e^x");
