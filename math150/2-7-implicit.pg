@@ -24,7 +24,22 @@ TEXT(beginproblem()); # Print problem number and point value
 $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 
 Context()->variables->add(y => "Real");
+
+# A big problem here is getting webwork to be able to generate
+# sufficient random sample points for comparison to check answers.
+# Ideally I'd like to just generate functions and check whether they
+# have enough sample points, repeating until we get an ok one, but I
+# haven't been able to figure out a good way to check whether a
+# function has enough sample points in advance.
+
+# Current "solution" is to set these limits relatively carefully:
 Context()->flags->set(limits=>[0.01, 1.5]);
+# and then do a little tracking of positive/negative values.
+# Specifically, each make_func can be told whether it's "okay to be
+# negative", which it then more or less obeys, and can also return
+# whether its input is allowed to be negative which is passed on to
+# inner functions of compositions.  This would work great except for
+# trig functions, but I'm hoping that issues won't be prevalent.
 
 sub make_term {
   my $type = random(1,5,1);
@@ -89,11 +104,15 @@ $f = $left - $right;
 $dfx = $f->D('x')->reduce();
 $dfy = $f->D('y')->reduce();
 
-$dydx = - $dfx / $dfy;
+if($dfy == 0) {
+  $dydx = Formula("INF");
+} else {
+  $dydx = - $dfx / $dfy;
+}
 
 Context()->texStrings;
 BEGIN_TEXT
-Given the equation \( $left = $right \) which expresses \(y\) as an implicit function of \(x\), find the derivative \(\frac{dy}{dx}\) in terms of \(x\) and \(y\).
+Given the equation \( $left = $right \) which expresses \(y\) as an implicit function of \(x\), find the derivative \(\frac{dy}{dx}\) in terms of \(x\) and \(y\).  If finding this derivative would involve dividing by zero, enter INF.
 
 $PAR
 

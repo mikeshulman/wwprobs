@@ -60,7 +60,7 @@ $f = $right - $left + $f0;
 $dfx = $f->D('x')->reduce();
 $dfy = $f->D('y')->reduce();
 
-if($dfy == 0) {
+if($dfy->substitute(y => $y0) == 0) {
     $tanln = String("none");
 } else {
     $dydx = - $dfx / $dfy;
