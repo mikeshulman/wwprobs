@@ -1,0 +1,73 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");
+#Make it so Formula objects don't turn pi into 3.14..., nor pi/2 into 1.57...
+Context()->flags->set(reduceConstants=>0);
+#For good measure, make it so Formula objects don't turn sin(1) into 0.84..., nor sqrt(2) into 1.41...
+Context()->flags->set(reduceConstantFunctions=>0);
+
+$pi = Formula("pi");
+
+# Amplitude
+$ampnum = non_zero_random(-20,20,1);
+$amp = Compute("$ampnum/2")->reduce();
+$absamp = abs($amp);
+
+# Midline
+$midline = random(-5,5,1);
+
+# Maximumx
+$max = ($midline + $amp)->reduce();
+
+# Xshift
+@shfracs = ('0','1/2','1','3/2');
+$shfrac = Formula($shfracs[random(0,scalar(@shfracs)-1,1)]);
+
+# Period
+$piper = random(0,1,1);
+if($piper == 0) {
+		$period = random(1,8,1);
+		$xshift = ($shfrac * $period)->reduce();
+		$maxshift = ($xshift + $period / 4)->reduce();
+} else {
+		@fractions = ('1/6','1/4','1/3','1/2','1','3/2','2','3','4','6');
+		$frac = Formula($fractions[random(0,scalar(@fractions)-1,1)]);
+		$period = $frac == 1 ? $pi : $frac * $pi;
+		$xshiftfrac = ($shfrac * $frac)->reduce();
+		$xshift = $xshiftfrac == 1 ? $pi : $xshiftfrac * $pi;
+		$maxshift = ($xshiftfrac + $frac / 4)->reduce() * $pi;
+}
+
+# function
+$f = Compute("$amp * sin(2*pi*(x-($xshift))/($period)) + $midline")->reduce();
+
+BEGIN_PGML
+Write an equation of a sinusoidal function that has amplitude [`[$absamp]`], period [`[$period]`], midline [`[$midline]`], and such that [`f([$xshift]) = [$midline]`] and [`f([$maxshift]) = [$max]`].
+
+[`f(x)=`] [_______________________________________]{$f}
+END_PGML
+
+ENDDOCUMENT();        

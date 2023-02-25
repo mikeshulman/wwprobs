@@ -1,0 +1,91 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGgraphmacros.pl",);
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+$pi = Formula("pi");
+
+# Amplitude
+$amp = Formula(non_zero_random(0,5,1));
+
+# Midline
+$midline = Formula(random(-5,5,1));
+
+# Maximum
+$max = $midline + $amp;
+$min = $midline - $amp;
+
+# Xshift
+$shfrac = random(0,1,0.25);
+
+# Period
+$period = Formula(random(1,8,1));
+$freqfraq = Formula("2 / $period");
+$freq = $freqfraq * $pi;
+$xshift = $shfrac * $period;
+
+# function
+$f = Compute("$amp * sin($freq*(x-($xshift))) + $midline");
+
+$xmin = -$period*2;
+$xmax = $period*2;
+
+$xrange = $xmax - $xmin;
+$yrange = $max - $min + 2;
+
+$gr = init_graph(-10,-10,10,10,
+                 axes=>[0,0],
+                 grid=>[20,20],
+                 size=>[400,400]
+                );
+
+add_functions($gr, "$f for x in <-10,10> using color:blue");
+($gr->fn)[0]->steps(200);
+
+Context()->texStrings;
+
+BEGIN_TEXT
+
+Here is the graph of a function \(f\).
+
+$BCENTER
+\{ image( insertGraph($gr), 
+width=>500,height=>500,tex_size=>800 ) \}
+$ECENTER
+
+Find the following properties of this function:
+$BR
+
+Amplitude: \{ans_rule(40)\}
+$BR
+Period: \{ans_rule(40)\}
+$BR
+Midline: \{ans_rule(40)\}
+
+END_TEXT
+
+ANS($amp->cmp());
+ANS($period->cmp());
+ANS($midline->cmp());
+
+ENDDOCUMENT();        

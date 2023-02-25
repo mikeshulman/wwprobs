@@ -40,8 +40,17 @@ $sin = Compute("$ssign sqrt($ref)/2");
 $cos = Compute("$csign sqrt($coref)/2");
 if($cos != 0) {
 		$tan = $sin / $cos;
+		$sec = 1 / $cos;
 } else {
 		$tan = String("DNE");
+		$sec = String("DNE");
+}
+if($sin != 0) {
+		$cot = $cos / $sin;
+		$csc = 1 / $sin;
+} else {
+		$cot = String("DNE");
+		$csc = String("DNE");
 }
 Context("Fraction");
 @fractions = ('0','1/6','1/4','1/3','1/2');
@@ -55,13 +64,16 @@ if ($quadrant >= 3) {
 $frac = $frac->reduce();
 if($frac == 1) {
 		$x = Formula("pi");
+} elsif($frac == 0) {
+		$x = "0";
 } else {
 		$x = Formula("$frac pi");
 }
-$fns = ['sin(x)','cos(x)','tan(x)'];
+$fns = ['cot(x)','sec(x)','csc(x)'];
 $fn = random(0,2,1);
+Context()->flags->set(reduceConstantFunctions=>0);
 $f = Formula($fns->[$fn])->substitute(x => $x);
-$vals = [$sin, $cos, $tan];
+$vals = [$cot, $sec, $csc];
 $ans = $vals->[$fn]->with(tolerance => 0.0000001);
 
 Context("Numeric");

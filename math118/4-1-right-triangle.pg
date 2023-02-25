@@ -1,0 +1,67 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGgraphmacros.pl",);
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+$pi = Formula("pi");
+
+$anglerad = random(0.1,1.5,0.1);
+$u = random(0,1,1);
+if($u == 0) {
+		$units = 'radians';
+		$angle = $anglerad;
+		$otherangle = $pi / 2 - $angle;
+} else {
+		$units = 'degrees';
+		$angle = Compute($anglerad * 180 / $pi);
+		$otherangle = 90 - $angle;
+}
+
+$side = random(0.1, 10, 0.1);
+
+$s = random(0,1,1);
+if($s == 0) {
+		# Adjacent
+		$whichside = 'AC';
+		$findside = 'BC';
+		$hypoteneuse = $side / cos($anglerad);
+} else {
+		# Opposite
+		$whichside = 'BC';
+		$findside = 'AC';
+		$hypoteneuse = $side / sin($anglerad);
+}
+$otherside = sqrt($hypoteneuse * $hypoteneuse - $side * $side);
+
+BEGIN_PGML
+In the right triangle [`ABC`], the right angle is at point [`C`].  The length of side [`[$whichside]`] is [`[$side]`], and the measure of the angle at point [`A`] is [`[$angle]`] [$units].  Find the following, to at least three significant digits:
+
+Measure of angle [`B`]: [_____]{$otherangle} [$units]
+
+Length of side [`[$findside]`]: [_____]{$otherside}
+
+Length of side [`AB`]: [_____]{$hypoteneuse}
+
+END_PGML
+
+ENDDOCUMENT();        
