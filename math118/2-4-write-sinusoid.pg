@@ -17,6 +17,12 @@
 ## Problem1('1')
 
 ########################################################################
+#
+# TODO: The numbers generated here are not good: some denominators are
+# very large, and sometimes they're displayed as decimals rather than
+# fractions.
+#
+########################################################################
 
 DOCUMENT();      
 loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
