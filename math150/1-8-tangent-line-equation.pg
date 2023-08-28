@@ -27,7 +27,8 @@ $a = non_zero_random(-4,4,1);
 $b = random(-9,9,1);
 $c = random(-8,8,1);
 
-$f = Compute("$a * x^2 + $b * x + $c");
+Context()->noreduce('(-x)-y');
+$f = Compute("$a * x^2 + $b * x + $c")->reduce();
 
 $x0 = random(-7,7,1);
 $fx0 = $f->eval(x => $x0);
