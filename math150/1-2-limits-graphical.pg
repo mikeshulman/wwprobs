@@ -121,6 +121,7 @@ width=>500,height=>500,tex_size=>800 ) \}
 $ECENTER
 
 Using this graph, find the following limits.  For any limit that does not exist, enter "DNE".
+Note that all segments of the graph shown are straight lines, which means that it is always possible to work out the <i>exact</i> values of these limits; you should not have to guess or estimate.
 $PAR
 
 \(\displaystyle\lim_{x \to $pt1} f(x) \approx \) \{ans_rule(40)\}
