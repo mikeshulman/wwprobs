@@ -1,0 +1,53 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGchoicemacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+$sc = random(-24,30,1);
+($num, $den) = reduce ($sc,12);
+$rad = Formula("$num * pi / $den")->reduce();
+
+$ix = $sc + 24;
+@quadrants = qw/0 1 1 1 1 1 2 3 3 3 3 3 4 5 5 5 5 5 6 7 7 7 7 7/;
+$quadrant = $quadrants[$ix % 24];
+@qwords = ('On the positive x-axis', 'In quadrant I', 'On the positive y-axis', 'In quadrant II', 'On the negative x-axis', 'In quadrant III', 'On the negative y-axis', 'In quadrant IV');
+$qword = $qwords[$quadrant];
+
+$mc = new_multiple_choice();
+$mc->qa("Where in the xy-plane is its terminal side located?",$qword);
+$mc->makeLast(@qwords);
+
+Context()->texStrings;
+
+BEGIN_TEXT
+An angle measures \($rad\) radians.
+
+\{ $mc->print_q() \}
+$BR
+\{ $mc->print_a() \}
+END_TEXT
+
+$showPartialCorrectAnswers = 0;
+ANS( radio_cmp( $mc->correct_ans() ) );
+
+ENDDOCUMENT();

@@ -1,0 +1,92 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Numeric");
+Parser::Number::NoDecimals;
+
+#Make it so Formula objects don't turn pi into 3.14..., nor pi/2 into 1.57...
+Context()->flags->set(reduceConstants=>0);
+#For good measure, make it so Formula objects don't turn sin(1) into 0.84..., nor sqrt(2) into 1.41...
+Context()->flags->set(reduceConstantFunctions=>0);
+
+$ref = random(0,4,1);
+$coref = 4 - $ref;
+$quadrant = random(1,4,1);
+$ssign = $quadrant <= 2 ? "+" : "-";
+$csign = ($quadrant == 1 || $quadrant == 4) ? "+" : "-";
+$sin = Compute("$ssign sqrt($ref)/2");
+$cos = Compute("$csign sqrt($coref)/2");
+if($cos != 0) {
+		$tan = $sin / $cos;
+		$sec = 1 / $cos;
+} else {
+		$tan = String("DNE");
+		$sec = String("DNE");
+}
+if($sin != 0) {
+		$cot = $cos / $sin;
+		$csc = 1 / $sin;
+} else {
+		$cot = String("DNE");
+		$csc = String("DNE");
+}
+Context("Fraction");
+@fractions = ('0','1/6','1/4','1/3','1/2');
+$frac = Formula($fractions[$ref]);
+if ($quadrant == 2 || $quadrant == 3) {
+		$frac = 1 - $frac;
+}
+if ($quadrant >= 3) {
+		$frac = 2 - $frac;
+}
+$frac = $frac->reduce();
+if($frac == 1) {
+		$x = Formula("pi");
+} elsif($frac == 0) {
+		$x = "0";
+} else {
+		$x = Formula("$frac pi");
+}
+$fns = ['cot(x)','sec(x)','csc(x)'];
+$fn = random(0,2,1);
+Context()->flags->set(reduceConstantFunctions=>0);
+$f = Formula($fns->[$fn])->substitute(x => $x);
+$vals = [$cot, $sec, $csc];
+$ans = $vals->[$fn]->with(tolerance => 0.0000001);
+
+Context("Numeric");
+Parser::Number::NoDecimals;
+
+#Context()->functions->disable('Trig');
+Context()->functions->disable('All');
+Context()->functions->enable('sqrt');
+
+BEGIN_PGML
+Find [`[$f]`].  Give the *exact* answer, as a fraction, not a decimal.  If it is undefined, enter DNE.
+
+[_______________________________________]{$ans}
+END_PGML
+
+ENDDOCUMENT();        

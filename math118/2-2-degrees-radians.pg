@@ -23,25 +23,27 @@ loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacr
 TEXT(beginproblem()); # Print problem number and point value
 $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 
-$a = non_zero_random(-4,4,1);
-$b = random(-9,9,1);
-$c = random(-8,8,1);
+$sc = random(-24,24,1);
+$deg = $sc * 15;
+($num, $den) = reduce ($sc,12);
+$rad = Formula("$num * pi / $den")->reduce();
 
-Context()->noreduce('(-x)-y');
-$f = Compute("$a * x^2 + $b * x + $c")->reduce();
-
-$x0 = random(-7,7,1);
-$fx0 = $f->eval(x => $x0);
-
-$df = $f->D('x');
-$dfx0 = $df->eval(x => $x0);
-
-$ans = Compute("$dfx0 * (x - $x0) + $fx0");
+if(random(0,1,1) == 0) {
+    $from = $rad;
+    $from_word = "radians";
+    $to = "degrees";
+    $ans = $deg;
+} else {
+    $from = $deg;
+    $from_word = "degrees";
+    $to = "radians";
+    $ans = $rad;
+}    
 
 BEGIN_PGML
-Let [`f(x) = [$f]`].  Find the equation of the tangent line to the graph of [`f`] at the point where [`x = [$x0]`].
+An angle measures [``[$from]``] [$from_word].  What is its measure in [$to]?
 
-[``y =``] [_________________________________________________________________]{$ans}
+[_______________________________________]{$ans}
 END_PGML
 
-ENDDOCUMENT();
+ENDDOCUMENT();        
