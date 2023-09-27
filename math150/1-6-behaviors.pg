@@ -1,0 +1,131 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","parserPopUp.pl","PGchoicemacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 0; # Don't show which answers are correct or incorrect
+
+sub make {
+		$correct = shift;
+		return DropDown([ 'positive', 'negative', 'zero', 'increasing', 'decreasing', 'constant', 'concave up', 'concave down', 'linear' ],
+										$correct, placeholder => 'Select One');
+}
+
+@firstder = (
+		["On an interval where \\(f'\\) is positive, \\(f\\) must be ", ".", "increasing"],
+		["On an interval where \\(f'\\) is negative, \\(f\\) must be ", ".", "decreasing"],
+		["On an interval where \\(f'\\) is zero, \\(f\\) must be ", ".", "constant"],
+
+		["On an interval where \\(f'\\) is ", ",  \\(f\\) must be increasing.", "positive"],
+		["On an interval where \\(f'\\) is ", ",  \\(f\\) must be decreasing.", "negative"],
+		["On an interval where \\(f'\\) is ", ", \\(f\\) must be constant.", "zero"],
+		);
+
+@secondder = (
+		["On an interval where \\(f''\\) is positive, \\(f'\\) must be ", ".", "increasing"],
+		["On an interval where \\(f''\\) is negative, \\(f'\\) must be ", ".", "decreasing"],
+		["On an interval where \\(f''\\) is zero, \\(f'\\) must be ", ".", "constant"],
+
+		["On an interval where \\(f''\\) is positive, \\(f\\) must be ", ".", "concave up"],
+		["On an interval where \\(f''\\) is negative, \\(f\\) must be ", ".", "concave down"],
+		["On an interval where \\(f''\\) is zero, \\(f\\) must be ", ".", "linear"],
+
+		["On an interval where \\(f''\\) is ", ",  \\(f'\\) must be increasing.", "positive"],
+		["On an interval where \\(f''\\) is ", ",  \\(f'\\) must be decreasing.", "negative"],
+		["On an interval where \\(f''\\) is ", ",  \\(f'\\) must be constant.", "zero"],
+
+		["On an interval where \\(f''\\) is ", ",  \\(f\\) must be concave up.", "positive"],
+		["On an interval where \\(f''\\) is ", ",  \\(f\\) must be concave down.", "negative"],
+		["On an interval where \\(f''\\) is ", ",  \\(f\\) must be linear.", "zero"],
+		);
+
+@slope = (
+		["On an interval where \\(f'\\) is positive, the slope of \\(f\\) must be ", ".", "positive"],
+		["On an interval where \\(f'\\) is negative, the slope of \\(f\\) must be ", ".", "negative"],
+		["On an interval where \\(f'\\) is increasing, the slope of \\(f\\) must be ", ".", "increasing"],
+		["On an interval where \\(f'\\) is decreasing, the slope of \\(f\\) must be ", ".", "decreasing"],
+		["On an interval where \\(f''\\) is positive, the slope of \\(f\\) must be ", ".", "increasing"],
+		["On an interval where \\(f''\\) is negative, the slope of \\(f\\) must be ", ".", "decreasing"],
+		["On an interval where the slope of \\(f\\) is positive, \\(f\\) must be ", ".", "increasing"],
+		["On an interval where the slope of \\(f\\) is negative, \\(f\\) must be ", ".", "decreasing"],
+		["On an interval where the slope of \\(f\\) is positive, \\(f'\\) must be ", ".", "positive"],
+		["On an interval where the slope of \\(f\\) is negative, \\(f'\\) must be ", ".", "negative"],
+		);
+
+@qs = @firstder;
+
+# This is supposed to work, but I didn't get it to.
+# push @qs, @secondder[NchooseK(@secondder,5)];
+# push @qs, @slope[NchooseK(@slope,2)];
+
+for (my $i = 0; $i < 5; $i++) {
+		$x = random(0,@secondder-1,1);
+		push @qs, $secondder[$x];
+		splice @secondder, $x, 1;
+}
+
+for (my $i = 0; $i < 2; $i++) {
+		$x = random(0,@slope-1,1);
+		push @qs, $slope[$x];
+		splice @slope, $x, 1;
+}
+
+@rqs = ();
+
+while (@qs) {
+		$x = random(0,@qs-1,1);
+		push @rqs, $qs[$x];
+		splice @qs, $x, 1;
+}
+
+$questions = "";
+$dds = [];
+
+for (my $i = 0; $i < @rqs; $i++) {
+		my $q = $rqs[$i];
+		$dds->[$i] = make($q->[2]);
+		# NB: The webwork preprocessor eats backslashes, so to make an actual Perl backslash we have to use ~~.
+		$questions .= $q->[0] . '[_]{$dds->[' . $i . "]}" . $q->[1] . "~~n~~n";
+}
+
+$hard11 = make('positive');
+$hard12 = make('positive');
+$hard21 = make('positive');
+$hard22 = make('negative');
+
+$hard = "";
+if (random(0,1,1) == 0) {
+		$hard = <<HARD
+On an interval where [`f'`] is [_]{~~$hard11} and [`f''`] is [_]{~~$hard12}, [`f`] must be increasing at an increasing rate.
+HARD
+} else {
+		$hard = <<HARD
+On an interval where [`f'`] is [_]{~~$hard21} and [`f''`] is [_]{~~$hard22}, [`f`] must be increasing at a decreasing rate.
+HARD
+}
+
+BEGIN_PGML
+[$questions]**
+
+[$hard]**
+END_PGML
+
+ENDDOCUMENT();        
