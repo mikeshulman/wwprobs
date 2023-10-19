@@ -1,0 +1,84 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context()->variables->add(y => "Real");
+Context()->noreduce('(-x)-y');
+
+$version = random(0,2);
+
+$lowexp = random(2,8);
+$highexp = $lowexp + random(1,4);
+
+$numexp = $lowexp;
+$denexp = $lowexp;
+if ($version == 0) {
+    $numexp = $highexp;
+} elsif ($version == 1) {
+    $denexp = $highexp;
+}
+
+sub makepoly {
+    my $exp = shift;
+    if ($exp == 0) {
+        $const = random(-10,10);
+        return ($const, "$const");
+    } else {
+        $dec = random(1,$exp);
+        $coeff = non_zero_random(-5,5);
+        ($oldcoeff, $rest) = makepoly($exp - $dec);
+        return ($coeff, "$coeff * x^($exp) + $rest");
+    }
+}
+
+($numcoeff, $num) = makepoly($numexp);
+($dencoeff, $den) = makepoly($denexp);
+
+$f = Formula("($num)/($den)")->reduce();
+
+$posans = $numcoeff / $dencoeff;
+$negans = $numcoeff / $dencoeff;
+
+if ($numexp > $denexp) {
+    if ($posans > 0) {
+        $posans = Infinity;
+        $negans = (($numexp + $denexp) % 2 == 0) ? Infinity : -Infinity;
+    } else {
+        $posans = -Infinity;
+        $negans = (($numexp + $denexp) % 2 == 0) ? -Infinity : Infinity;
+    }
+} elsif ($numexp < $denexp) {
+    $posans = 0;
+    $negans = 0;
+}
+
+BEGIN_PGML
+Let [``f(x) = [$f]``].  Find the following limits:
+
+[``\lim_{x\to \infty} f(x) = ``] [_______________________________________]{$posans}
+
+[``\lim_{x\to -\infty} f(x) = ``] [_______________________________________]{$negans}
+END_PGML
+
+ENDDOCUMENT();

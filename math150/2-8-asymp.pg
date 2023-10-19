@@ -1,0 +1,89 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context()->variables->add(y => "Real");
+Context()->noreduce('(-x)-y');
+
+$version = random(0,2);
+
+$lowexp = random(1,3);
+$highexp = $lowexp + random(1,2);
+
+$numexp = $lowexp;
+$denexp = $lowexp;
+if ($version == 0) {
+    $numexp = $highexp;
+} elsif ($version == 1) {
+    $denexp = $highexp;
+}
+
+%vertidx = ();
+
+$dencoeff = non_zero_random(-6,6);
+$den = "$dencoeff ";
+for ($i = 0; $i < $denexp; $i++) {
+    $root = random(-4,4);
+    $vertidx{$root} = $vertidx{$root} + 1;
+    $den = "$den * (x - $root)";
+}
+
+$numcoeff = non_zero_random(-6,6);
+$num = "$numcoeff";
+for ($i = 0; $i < $numexp; $i++) {
+    $root = random(-4,4);
+    $vertidx{$root} = max($vertidx{$root} - 1, 0);
+    $num = "$num * (x - $root)";
+}
+
+$f = Formula("($num)/($den)")->reduce();
+
+$horiz = List($numcoeff / $dencoeff);
+
+if ($numexp > $denexp) {
+    $horiz = List(String("none"));
+} elsif ($numexp < $denexp) {
+    $horiz = List(0);
+}
+
+@verts = ();
+foreach ($k, $v) (%vertidx) {
+    if ($v > 0) {
+        push @verts, $k;
+    }
+}
+$verts = List(@verts);
+
+BEGIN_PGML
+Let [``f(x) = [$f]``].
+
+List all the vertical asymptotes of [`f`].  If there are none, enter "none".
+[_______________________________________]{$verts}
+
+List all the horizontal asymptotes of [`f`].  If there are none, enter "none".
+[_______________________________________]{$horiz}
+
+END_PGML
+
+ENDDOCUMENT();
