@@ -1,0 +1,193 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","contextFraction.pl","PGauxiliaryFunctions.pl","PGgraphmacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
+Context()->variables->add(y => "Real");
+Context()->flags->set(limits=>[2,5]);
+Context()->noreduce('(-x)-y');
+
+Context()->strings->add(min => {}, max => {}, neither => {});
+
+sub factorial {
+		my $n = shift;
+		if ($n < 2) {
+				return $n;
+		} else {
+				return $n * factorial ($n-1);
+		}
+}
+
+sub poly {
+		my @coeffs = @_;
+		my $poly = "0";
+		for ($j = 0; $j < @coeffs; $j++) {
+				$poly = $coeffs[$j] . " * x^$j + $poly";
+		}
+		return Formula($poly)->reduce();
+}
+
+$ncrits = 2;
+@crits = ();
+@fp_coeffs = (1);
+$fp_factored = Formula("1");
+for($i = 0; $i < $ncrits; $i++) {
+		if (random(1,3) > 1 || ! (defined $a)) {
+				$a = random(-4,4);
+		}
+		$fp_factored = $fp_factored * Formula("(x-$a)");
+		push @crits, $a;
+		@newcoeffs = (0, @fp_coeffs);
+		for ($j = 0; $j < @fp_coeffs; $j++) {
+				$newcoeffs[$j] += $fp_coeffs[$j] * (- $a);
+		}
+		@fp_coeffs = @newcoeffs;
+}
+$fp_factored = $fp_factored->reduce();
+
+$fp = poly(@fp_coeffs);
+
+$mult = non_zero_random(-3,3) * factorial($ncrits + 1);
+@f_coeffs = (random(-6,6));
+for ($j = 0; $j < @fp_coeffs; $j++) {
+		push @f_coeffs, $fp_coeffs[$j] * $mult / ($j + 1);
+}
+$f = poly(@f_coeffs);
+
+$leftend = -5;
+$rightend = 5;
+
+@crits = PGsort( sub {$_[0] < $_[1]}, @crits);
+push @crits, $rightend;
+$a = $leftend;
+@incs = ();
+@decs = ();
+@mins = ();
+@maxes = ();
+@neithers = ();
+$last = undef;
+foreach $x (@crits) {
+		if ($x == $a) {
+				next;
+		}
+		$b = $x;
+		$ivl = Interval($a,$b);
+		$xm = $x - 0.5;
+		if ($fp->eval(x => $xm) > 0) {
+				push @incs, $ivl;
+				if($last == 1) {
+						push @neithers, $a;
+				} elsif($last == -1) {
+						push @mins, $a;
+				}
+				$last = 1;
+		} else {
+				push @decs, $ivl;
+				if($last == 1) {
+						push @maxes, $a;
+				} elsif($last == -1) {
+						push @neithers, $a;
+				}
+				$last = -1;
+		}
+		$a = $x;
+}
+
+$incs = @incs == 0 ? String('none') : List(@incs);
+$decs = @decs == 0 ? String('none') : List(@decs);
+$mins = @mins == 0 ? String('none') : List(@mins);
+$maxes = @maxes == 0 ? String('none') : List(@maxes);
+$neithers = @neithers == 0 ? String('none') : List(@neithers);
+
+@fpp_coeffs = ();
+for ($j = 1; $j < @fp_coeffs; $j++) {
+		push @fpp_coeffs, $j * $fp_coeffs[$j];
+}
+$fpp = poly(@fpp_coeffs);
+
+$absmin = min($fp->eval(x=>$leftend),$fp->eval(x=>$rightend));
+$absmax = max($fp->eval(x=>$leftend),$fp->eval(x=>$rightend));
+
+$inflpt = String('none');
+$concups = String('none');
+$concdns = String('none');
+if (@fpp_coeffs > 1) {
+		$inflpt = - $fpp_coeffs[0] / $fpp_coeffs[1];
+		$absmin = min($absmin, $fp->eval(x=>$inflpt));
+		$absmax = max($absmax, $fp->eval(x=>$inflpt));
+		if ($fpp_coeffs[1] > 0) {
+				$concups = List(Interval($inflpt, $rightend));
+				$concdns = List(Interval($leftend, $inflpt));
+		} else {
+				$concdns = List(Interval($inflpt, $rightend));
+				$concups = List(Interval($leftend, $inflpt));
+		}
+} else {
+		if ($fpp_coeffs[0] > 0) {
+				$concups = List(Interval($leftend,$rightend));
+		} else {
+				$concdns = List(Interval($leftend,$rightend));
+		}
+}				
+
+# Its derivative is [`[$mult]`] times [```f(x) = [$fp_factored] = [$fp]```]
+
+# At what [``x``]-values does [``f``] have a critical point that is neither a local minimum nor a local maximum?  [_________________]{$neithers}
+
+$absmax = $absmax + max(.3 * abs($absmax), 3);
+$absmin = $absmin - max(.3 * abs($absmin), 3);
+
+$gr = init_graph($leftend,$absmin,$rightend,$absmax,
+                 axes=>[0,0],
+                 grid=>[10],
+                 size=>[400,400]
+                );
+
+add_functions($gr, "$fp for x in (-5,5) using color:blue");
+
+BEGIN_PGML
+Here is the graph of a function [``y = f(x)``] on the interval [``(-5,5)``]:
+
+[@ image( insertGraph($gr), width=>500,height=>500,tex_size=>800 ) @]*
+
+
+For all the following questions, enter a comma-separated list of _open_ intervals or values, or "NONE" if there are no such intervals or values.  Do not consider [``f``] to be increasing _at_ a critical number, even if it is increasing on both sides, and similarly for decreasing, concave up, etc.  All intervals should be subintervals of [``(-5,5)``], i.e. the leftmost interval should start at [``-5``] and the right most one should end at [``5``].
+
+On what open intervals is [``f``] increasing?  [_________________]{$incs}
+
+On what open intervals is [``f``] decreasing?  [_________________]{$decs}
+
+At what [``x``]-values does [``f``] have a local minimum?  [_________________]{$mins}
+
+At what [``x``]-values does [``f``] have a local maximum?  [_________________]{$maxes}
+
+On what open intervals is [``f``] concave up?  [_________________]{$concups}
+
+On what open intervals is [``f``] concave down?  [_________________]{$concdns}
+
+At what [``x``]-values does [``f``] have an inflection point?  [_________________]{$inflpt}
+
+END_PGML
+
+ENDDOCUMENT();
