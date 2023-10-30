@@ -52,10 +52,14 @@ $ncrits = 2;
 @crits = ();
 @fp_coeffs = (1);
 $fp_factored = Formula("1");
+$leftend = 0;
+$rightend = 0;
 for($i = 0; $i < $ncrits; $i++) {
 		if (random(1,3) > 1 || ! (defined $a)) {
-				$a = random(-4,4);
+				$a = random(-4 + 3*($i == 1), 4 - 3*($i == 0));
 		}
+    $leftend = min($leftend, $a - 1);
+    $rightend = max($rightend, $a + 1);
 		$fp_factored = $fp_factored * Formula("(x-$a)");
 		push @crits, $a;
 		@newcoeffs = (0, @fp_coeffs);
@@ -66,17 +70,14 @@ for($i = 0; $i < $ncrits; $i++) {
 }
 $fp_factored = $fp_factored->reduce();
 
-$fp = poly(@fp_coeffs);
-
 $mult = non_zero_random(-3,3) * factorial($ncrits + 1);
 @f_coeffs = (random(-6,6));
 for ($j = 0; $j < @fp_coeffs; $j++) {
-		push @f_coeffs, $fp_coeffs[$j] * $mult / ($j + 1);
+    $fp_coeffs[$j] *= $mult;
+		push @f_coeffs, $fp_coeffs[$j] / ($j + 1);
 }
 $f = poly(@f_coeffs);
-
-$leftend = -5;
-$rightend = 5;
+$fp = poly(@fp_coeffs);
 
 @crits = PGsort( sub {$_[0] < $_[1]}, @crits);
 push @crits, $rightend;
@@ -155,24 +156,26 @@ if (@fpp_coeffs > 1) {
 
 # At what [``x``]-values does [``f``] have a critical point that is neither a local minimum nor a local maximum?  [_________________]{$neithers}
 
-$absmax = $absmax + max(.3 * abs($absmax), 3);
-$absmin = $absmin - max(.3 * abs($absmin), 3);
+$absmax = $absmax + max(.3 * abs($absmax), .3 * abs($absmin));
+$absmin = $absmin - max(.3 * abs($absmin), .3 * abs($absmax));
+
+$width = $rightend - $leftend;
 
 $gr = init_graph($leftend,$absmin,$rightend,$absmax,
                  axes=>[0,0],
-                 grid=>[10],
+                 grid=>[$width],
                  size=>[400,400]
                 );
 
-add_functions($gr, "$fp for x in (-5,5) using color:blue");
+add_functions($gr, "$fp for x in ($leftend,$rightend) using color:blue");
 
 BEGIN_PGML
-Here is the graph of a function [``y = f(x)``] on the interval [``(-5,5)``]:
+Here is the graph of _the derivative of_ a function [``f``] on the interval [``([$leftend],[$rightend])``].  In other words, this is the graph of [``y = f'(x)``]:
 
 [@ image( insertGraph($gr), width=>500,height=>500,tex_size=>800 ) @]*
 
 
-For all the following questions, enter a comma-separated list of _open_ intervals or values, or "NONE" if there are no such intervals or values.  Do not consider [``f``] to be increasing _at_ a critical number, even if it is increasing on both sides, and similarly for decreasing, concave up, etc.  All intervals should be subintervals of [``(-5,5)``], i.e. the leftmost interval should start at [``-5``] and the right most one should end at [``5``].
+For all the following questions about the function [``f``] (not [``f'``]), enter a comma-separated list of _open_ intervals or values, or "NONE" if there are no such intervals or values.  Do not consider [``f``] to be increasing _at_ a critical number, even if it is increasing on both sides, and similarly for decreasing, concave up, etc.  All intervals should be subintervals of [``([$leftend],[$rightend])``], i.e. the leftmost interval should start at [``[$leftend]``] and the right most one should end at [``[$rightend]``].
 
 On what open intervals is [``f``] increasing?  [_________________]{$incs}
 
