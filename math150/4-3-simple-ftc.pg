@@ -1,0 +1,96 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl",'parserFormulaUpToConstant.pl');
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
+Context()->variables->add(y => "Real");
+Context()->flags->set(limits=>[2,5]);
+
+sub make_term {
+  my $type = random(0,10,1);
+  if($type <= 2) {
+			my $exponent = non_zero_random(-2,7,1);
+			$f = Formula("x^$exponent");
+			$ff = Formula("x^($exponent+1) / ($exponent+1)");
+  } elsif($type <= 3) {
+			$f = Formula("sqrt(x)");
+			$ff = Formula("2/3*x^{3/2}");
+  } elsif($type <= 4) {
+			my $exponent = Fraction(1,random(3,7,1));
+			$f = Formula("x^y")->substitute(y => $exponent);
+			$ff = Formula("x^(y+1) / (y+1)")->substitute(y => $exponent);
+  } elsif($type <= 5) {
+			$f = Formula("e^x");
+			$ff = $f;
+  } elsif($type <= 6) {
+			my $base = random(2,8,1);
+			$f = Formula("$base^x");
+			$ff = Formula("$base^x / ln($base)");
+  } elsif($type <= 7) {
+			$f = Formula("sin(x)");
+			$ff = Formula("-cos(x)");
+  } elsif($type <= 8) {
+			$f = Formula("cos(x)");
+			$ff = Formula("sin(x)");
+  } else {
+			$f = Formula(non_zero_random(-15,15,1));
+			$ff = $f * Formula("x");
+  }
+  my $coefftype = random(1,5,1);
+  my $coeff = 1;
+  if($coefftype <= 3) {
+    $coeff = non_zero_random(-9,9,1);
+  }
+  return $coeff * $f, $coeff * $ff;
+}
+
+sub make_func {
+  my $terms = shift;
+  if($terms <= 1) {
+			my ($f,$ff) = make_term();
+			return ($f, $ff);
+  }
+	my ($f, $ff) = make_term();
+	my ($fs, $ffs) = make_func($terms - 1);
+	return ($f + $fs, $ff + $ffs);
+}
+
+$terms = random(1,3,1);
+($f, $ff) = make_func($terms);
+$f = $f->reduce();
+
+$a = random(1,8,1);
+$b = random(1,8,1);
+if ($b < $a) {
+		($a,$b) = ($b,$a);
+}
+$int = $ff->eval(x => $b) - $ff->eval(x => $a);
+
+BEGIN_PGML
+Find the following definite integral:
+
+[``\int_{[$a]}^{[$b]} [$f]\, dx = ``] [_______________________________________]{$int}
+END_PGML
+
+ENDDOCUMENT();
