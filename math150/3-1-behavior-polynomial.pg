@@ -66,13 +66,15 @@ for($i = 0; $i < $ncrits; $i++) {
 }
 $fp_factored = $fp_factored->reduce();
 
-$fp = poly(@fp_coeffs);
-
 $mult = non_zero_random(-3,3) * factorial($ncrits + 1);
+
 @f_coeffs = (random(-6,6));
 for ($j = 0; $j < @fp_coeffs; $j++) {
-		push @f_coeffs, $fp_coeffs[$j] * $mult / ($j + 1);
+    $fp_coeffs[$j] *= $mult;
+		push @f_coeffs, $fp_coeffs[$j] / ($j + 1);
 }
+
+$fp = poly(@fp_coeffs);
 $f = poly(@f_coeffs);
 
 @crits = PGsort( sub {$_[0] < $_[1]}, @crits);

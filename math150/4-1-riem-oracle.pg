@@ -47,7 +47,14 @@ for (my $i = 0; $i < $count + 1; $i++) {
 }
 $end = $x - $step;
 
-$riemM = ($riemL + $riemR) / 2;
+$riemA = ($riemL + $riemR) / 2;
+
+$riemM = Real(0);
+$x = $start + $step / 2;
+for (my $i = 0; $i < $count; $i++) {
+  $riemM += &$f($x) * $step;
+  $x += $step;
+}
 
 #  Calculate the cubic spline approximation
 $llimit = $start; $rlimit = $end;
@@ -173,7 +180,7 @@ ANS($riemM->cmp(
   checker => sub {
     my ($correct, $student, $ansHash) = @_;
     my $sv = $student->value;
-    return (($sv == $riemL) || ($sv == $riemM) || ($sv == $riemR));
+    return (($sv == $riemL) || ($sv == $riemA) || ($sv == $riemR) || ($sv == $riemM));
   }
 ));
 

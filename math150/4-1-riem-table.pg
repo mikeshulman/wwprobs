@@ -53,7 +53,7 @@ for (my $i = 0; $i < $count; $i++) {
 $riemM = ($riemL + $riemR) / 2;
 
 BEGIN_TEXT
-Shown below is a table of measurements of the velocity \(v(t)\) of a moving object at different times.  Given only this information, find a good approximation to the displacement of the object over the interval \([$a,$b]\).
+Shown below is a table of measurements of the velocity \(v(t)\) of a moving object at different times.  Given only this information, find as good an approximation as possible to the displacement of the object over the interval \([$a,$b]\).
 
 \{
 DataTable(

@@ -49,7 +49,14 @@ for (my $i = 0; $i < $count + 1; $i++) {
 }
 $end = $x - $step;
 
-$riemM = ($riemL + $riemR) / 2;
+$riemM = Real(0);
+$x = $start + $step / 2;
+for (my $i = 0; $i < $count; $i++) {
+  $riemM += $v->eval(x => $x) * $step;
+  $x += $step;
+}
+
+$riemA = ($riemL + $riemR) / 2;
 
 $which = random(0,1,1);
 $intro = "The velocity of a moving object is given by";
@@ -77,7 +84,7 @@ ANS($riemM->cmp(
   checker => sub {
     my ($correct, $student, $ansHash) = @_;
     my $sv = $student->value;
-    return (($sv == $riemL) || ($sv == $riemM) || ($sv == $riemR));
+    return (($sv == $riemL) || ($sv == $riemA) || ($sv == $riemR) || ($sv == $riemM));
   }
 ));
 
