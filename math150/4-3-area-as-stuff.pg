@@ -1,0 +1,102 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGgraphmacros.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context()->flags->set(limits=>[2,5]);
+
+$center = random(-3,3,1);
+$a = $center - random(1,3,1);
+$b = $center + random(1,3,1);
+$a0 = min(-1, $a - random(1,3,1));
+$b0 = max(1, $b + random(1,3,1));
+
+$curr = random(-2,2,1);
+@heights = ( $curr );
+$max = max($curr,0);
+$min = min($curr,0);
+@fns = ();
+
+$int = Formula(0);
+
+for($i = $a0 + 1; $i <= $b0; $i++) {
+		$old = $curr;
+		if($old > 0) {
+				$curr = $old + random(-$old, 2, 1);
+		} elsif($old < 0) {
+				$curr = $old + random(-2, -$old, 1);
+		} else {
+				$curr = $old + random(-2, 2, 1);
+		}
+		push @heights, $curr;
+		$min = min($min, $curr);
+		$max = max($max, $curr);
+
+		$m = ($curr - $old);
+		$fn = Formula("$curr + $m * (x - $i)");
+		$i0 = $i - 1;
+		push @fns, "${fn} for x in [${i0},${i}] using color:blue";
+
+		if($i > $a && $i <= $b) {
+				$int += ($old + $curr) / 2;
+		}
+}
+
+$gr = init_graph($a0  , $min - 1 , $b0 , $max + 1,
+                 axes=>[0,0],
+                 grid=>[$b0 - $a0 , $max - $min + 2],
+                 size=>[400,400]
+                );
+
+foreach $fn (@fns) {
+		add_functions($gr, $fn);
+}
+
+$type = random(1,3,1);
+$graph_of_what = "";
+$what_to_find = "";
+$answer = $int;
+if($type == 1) {
+		$graph_of_what = "the velocity of a moving object";
+		$what_to_find = "the total displacement from time [`$a`] to [`$b`]";
+} elsif($type == 2) {
+		$graph_of_what = "the derivative of a function [`f(x)`]";
+		$what_to_find = "the net change in the value of [`f(x)`] between [`x=$a`] and [`x=$b`]";
+} else {
+		$val = random(-3,3,1);
+		$answer = $val + $int;
+		$graph_of_what = "a function [`f(x)`]";
+		$what_to_find = "the value of [`F($b)`], where [`F(x)`] is an antiderivative of [`f(x)`] such that [`F($a) = $val`]";
+}
+
+BEGIN_PGML
+Here is the graph of [@ $graph_of_what @]**.  The grid lines are spaced 1 unit apart.
+
+>> [@ image( insertGraph($gr), width=>500,height=>500,tex_size=>800 ) @]* <<
+
+Find [@ $what_to_find @]**:
+
+[________________]{$answer}
+END_PGML
+
+ENDDOCUMENT();
