@@ -107,7 +107,7 @@ $ans = $F->eval(x => $b) - $F->eval(x => $a);
 BEGIN_PGML
 Use the Fundamental Theorem of Calculus to find the net signed area bounded by the function [`f(x) = [$f]`], the [``x``]-axis, and the lines [`x = [$a]`] and [`x = [$b]`].
 
-[``\int_{[$a]}^{[$b]} \big([$f]\big) \, dx  = ``] [_______________________________________]{$ans}
+[_______________________________________]{$ans}
 END_PGML
 
 ENDDOCUMENT();
