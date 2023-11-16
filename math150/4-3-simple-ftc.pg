@@ -32,7 +32,11 @@ sub make_term {
   if($type <= 2) {
 			my $exponent = non_zero_random(-2,7,1);
 			$f = Formula("x^$exponent");
-			$ff = Formula("x^($exponent+1) / ($exponent+1)");
+			if($exponent != -1) {
+					$ff = Formula("x^($exponent+1) / ($exponent+1)");
+			} else {
+					$ff = Formula("ln(x)");
+			}
   } elsif($type <= 3) {
 			$f = Formula("sqrt(x)");
 			$ff = Formula("2/3*x^{3/2}");
