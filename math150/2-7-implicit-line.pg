@@ -19,11 +19,12 @@
 ########################################################################
 
 DOCUMENT();
-loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl");
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","parserImplicitPlane.pl");
 TEXT(beginproblem()); # Print problem number and point value
 $showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
 
-Context()->variables->add(y => "Real");
+Context("ImplicitPlane");
+Context()->variables->are(x => "Real", y => "Real");
 Context()->flags->set(limits=>[0.01, 1.5]);
 
 sub make_term {
@@ -60,21 +61,17 @@ $f = $right - $left + $f0;
 $dfx = $f->D('x')->reduce();
 $dfy = $f->D('y')->reduce();
 
-if($dfy->substitute(x => $x0, y => $y0) == 0) {
-    $tanln = String("none");
-} else {
-    $dydx = - $dfx / $dfy;
-    $m0 = $dydx->eval(x => $x0, y => $y0);
-    $tanln = Formula("$y0 + $m0*(x - $x0)");
-}
+$dx0 = $dfx->eval(x => $x0, y => $y0);
+$dy0 = $dfy->eval(x => $x0, y => $y0);
+$tanln = ImplicitPlane("$dy0 * (y - $y0) = - $dx0 * (x - $x0)");
 
 Context()->texStrings;
 BEGIN_TEXT
-Given the equation \( $left = $right + $f0 \) which expresses \(y\) as an implicit function of \(x\), find an equation of the tangent line to its graph at the point \(($x0,$y0)\).  If the tangent line is vertical, enter NONE.
+Given the equation \( $left = $right + $f0 \) which expresses \(y\) as an implicit function of \(x\), find an equation of the tangent line to its graph at the point \(($x0,$y0)\).
 
 $PAR
 
-\(y = \) \{ans_rule(40)\}
+\{ans_rule(40)\}
 END_TEXT
 
 ANS($tanln->cmp());

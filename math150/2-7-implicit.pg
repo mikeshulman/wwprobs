@@ -112,7 +112,7 @@ if($dfy == 0) {
 
 Context()->texStrings;
 BEGIN_TEXT
-Given the equation \( $left = $right \) which expresses \(y\) as an implicit function of \(x\), find the derivative \(\frac{dy}{dx}\) in terms of \(x\) and \(y\).  If finding this derivative would involve dividing by zero, enter INF.
+Given the equation \( $left = $right \) which expresses \(y\) as an implicit function of \(x\), find the derivative \(\frac{dy}{dx}\) in terms of \(x\) and \(y\).  If finding this derivative would involve dividing by zero, enter \(\infty\) or INF.
 
 $PAR
 
