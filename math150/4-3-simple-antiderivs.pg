@@ -84,7 +84,8 @@ sub make_func {
 $f = $f->reduce();
 
 BEGIN_PGML
-Find any antiderivative of the function [```f(x) = [$f]```]
+Find any antiderivative of the function [```f(x) = [$f].```]
+(Enter one particular antiderivative, not the "most general" one with an arbitrary constant.)
 
 [`F(x) = `] [_______________________________________]{$ff->cmp(uptoConstant => 1)}
 END_PGML
