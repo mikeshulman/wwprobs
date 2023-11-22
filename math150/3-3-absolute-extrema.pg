@@ -1,0 +1,143 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","contextFraction.pl","PGauxiliaryFunctions.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");            # Setting reduceConstants=>0 and not reduce()ing is another option
+Context()->variables->add(y => "Real");
+Context()->flags->set(limits=>[2,5]);
+Context()->noreduce('(-x)-y');
+
+Context()->strings->add(min => {}, max => {}, neither => {});
+
+sub factorial {
+		my $n = shift;
+		if ($n < 2) {
+				return $n;
+		} else {
+				return $n * factorial ($n-1);
+		}
+}
+
+sub poly {
+		my @coeffs = @_;
+		my $poly = "0";
+		for ($j = 0; $j < @coeffs; $j++) {
+				$poly = $coeffs[$j] . " * x^$j + $poly";
+		}
+		return Formula($poly)->reduce();
+}
+
+$ncrits = 2;
+@crits = ();
+@fp_coeffs = (1);
+$fp_factored = Formula("1");
+$center = undef;
+for($i = 0; $i < $ncrits; $i++) {
+		if (random(1,3) > 1 || ! (defined $a)) {
+				$a = random(-7,7);
+		}
+		if (!defined $center) {
+				$center = $a;
+		}
+		$fp_factored = $fp_factored * Formula("(x-$a)");
+		push @crits, $a;
+		@newcoeffs = (0, @fp_coeffs);
+		for ($j = 0; $j < @fp_coeffs; $j++) {
+				$newcoeffs[$j] += $fp_coeffs[$j] * (- $a);
+		}
+		@fp_coeffs = @newcoeffs;
+}
+$fp_factored = $fp_factored->reduce();
+
+$mult = non_zero_random(-3,3) * factorial($ncrits + 1);
+
+@f_coeffs = (random(-6,6));
+for ($j = 0; $j < @fp_coeffs; $j++) {
+    $fp_coeffs[$j] *= $mult;
+		push @f_coeffs, $fp_coeffs[$j] / ($j + 1);
+}
+
+$fp = poly(@fp_coeffs);
+$f = poly(@f_coeffs);
+
+$a = max(-7, $center - random(2,5));
+$b = min(7, $center + random(2,5));
+
+$fa = $f->eval(x => $a);
+$fb = $f->eval(x => $b);
+
+%minat = ($a => 1);
+$min = $fa;
+if ($fb < $fa) {
+		%minat = ($b => 1);
+		$min = $fb;
+} elsif ($fb == $fa) {
+		$minat{$b} = 1;
+}
+
+%maxat = ($a => 1);
+$max = $fa;
+if ($fb > $fa) {
+		%maxat = ($b => 1);
+		$max = $fb;
+} elsif ($fb == $fa) {
+		$maxat{$b} = 1;
+}
+
+foreach $x (@crits) {
+		next if $x < $a || $x > $b;
+		$fx = $f->eval(x => $x);
+		if($fx < $min) {
+				%minat = ($x => 1);
+				$min = $fx;
+		} elsif($fx == $min) {
+				$minat{$x} = 1;
+		}
+		if($fx > $max) {
+				%maxat = ($x => 1);
+				$max = $fx;
+		} elsif($fx == $max) {
+				$maxat{$x} = 1;
+		}
+}
+
+$minat = List(keys %minat);
+$maxat = List(keys %maxat);
+
+BEGIN_PGML
+Consider the function [```f(x) = [$f]```]
+
+Find the maximum and minimum values of this function on the interval [`[[$a],[$b]]`].
+
+Maximum value on this interval: [____]{$max}
+
+List all [`x`]-values in the interval at which the maximum occurs: [____]{$maxat}
+
+Minimum value on this interval: [____]{$min}
+
+List all [`x`]-values in the interval at which the minimum occurs: [____]{$minat}
+
+END_PGML
+
+ENDDOCUMENT();
