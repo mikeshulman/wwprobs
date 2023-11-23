@@ -1,0 +1,151 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","contextFraction.pl","PGauxiliaryFunctions.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context()->variables->add(t => "Real");
+Context()->flags->set(limits=>[2,5]);
+Context()->noreduce('(-x)-y');
+
+sub poly {
+		my @coeffs = @_;
+		my $poly = "0";
+		for ($j = 0; $j < @coeffs; $j++) {
+				$poly = $coeffs[$j] . " * x^$j + $poly";
+		}
+		return Formula($poly)->reduce();
+}
+
+$lc = non_zero_random(-3,3);
+
+$ncrits = min(random(1,3,1),2);
+@crits = ();
+@fp_coeffs = ($lc);
+$center = undef;
+for($i = 0; $i < $ncrits; $i++) {
+		if (random(1,3) > 1 || ! (defined $a)) {
+				$a = random(-7,7);
+		}
+		if (!defined $center) {
+				$center = $a;
+		}
+		push @crits, $a;
+		@newcoeffs = (0, @fp_coeffs);
+		for ($j = 0; $j < @fp_coeffs; $j++) {
+				$newcoeffs[$j] += $fp_coeffs[$j] * (- $a);
+		}
+		@fp_coeffs = @newcoeffs;
+}
+
+$fp = poly(@fp_coeffs);
+
+$other = random(1,3);
+$pow = random(1,2);
+$factor = 1;
+if ($other == 1) {
+		$base = random(-1,5);
+		if($base < 2) {
+				$factor = Formula("(e^x)^($pow)");
+		} else {
+				$factor = Formula("($base^x)^($pow)");
+		}
+} elsif ($other == 2) {
+		$const = random(1,4);
+		if (random(1,2) == 1) {
+				$factor = Formula("(sin(x)^2 + $const)^($pow)");
+		} else {
+				$factor = Formula("(cos(x)^2 + $const)^($pow)");
+		}
+} else {
+		$const = random(1,4);
+		$exp = random(1,3) * 2;
+		$factor = Formula("(x^$exp + $const)^($pow)");
+}
+if (random(1,2) == 1) {
+		$fp = $fp * $factor;
+} else {
+		$fp = $fp / $factor;
+}
+$fp = $fp->reduce();
+$fp = $fp->substitute(x => 't');
+
+@crits = PGsort( sub {$_[0] < $_[1]}, @crits);
+push @crits, Compute("Infinity");
+$a = Compute("-Infinity");
+@incs = ();
+@decs = ();
+@mins = ();
+@maxes = ();
+@neithers = ();
+$last = undef;
+foreach $x (@crits) {
+		if ($x == $a) {
+				next;
+		}
+		$b = $x;
+		$ivl = Interval($a,$b);
+		$xm = ($x == Infinity ? 10 : $x - 0.5);
+		if ($fp->eval(t => $xm) > 0) {
+				push @incs, $ivl;
+				if($last == 1) {
+						push @neithers, $a;
+				} elsif($last == -1) {
+						push @mins, $a;
+				}
+				$last = 1;
+		} else {
+				push @decs, $ivl;
+				if($last == 1) {
+						push @maxes, $a;
+				} elsif($last == -1) {
+						push @neithers, $a;
+				}
+				$last = -1;
+		}
+		$a = $x;
+}
+
+$incs = @incs == 0 ? String('none') : List(@incs);
+$decs = @decs == 0 ? String('none') : List(@decs);
+$mins = @mins == 0 ? String('none') : List(@mins);
+$maxes = @maxes == 0 ? String('none') : List(@maxes);
+$neithers = @neithers == 0 ? String('none') : List(@neithers);
+
+$a = random(-7,7);
+
+BEGIN_PGML
+Consider the function [```f(x) = \int_{[$a]}^{x} [$fp]\,dt```]
+
+For all the following questions, enter a comma-separated list of _open_ intervals or values, or "NONE" if there are no such intervals or values.  Do not consider [``f``] to be increasing _at_ a critical number, even if it is increasing on both sides, and similarly for decreasing, concave up, etc.
+
+On what open intervals is [``f``] increasing?  [_________________]{$incs}
+
+On what open intervals is [``f``] decreasing?  [_________________]{$decs}
+
+At what [``x``]-values does [``f``] have a local minimum?  [_________________]{$mins}
+
+At what [``x``]-values does [``f``] have a local maximum?  [_________________]{$maxes}
+
+END_PGML
+
+ENDDOCUMENT();
