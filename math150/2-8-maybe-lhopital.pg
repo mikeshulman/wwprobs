@@ -35,25 +35,26 @@ Context()->flags->set(limits=>[2,5], reduceConstantFunctions => 0);
 # comparison" error.  Maybe because the numbers get too big?
 
 sub make_zero_func {
-		my ($a, $poly_ok) = @_;
+		my ($a, $poly_ok, $nonzero) = @_;
 		my $f = undef;
 		my $poly = 0;
 		my $type = random(2 - 2 * $poly_ok, 4);
 		if($type <= 1) {
 				my $coeff = non_zero_random(-4,4);
-				my $const = $a * $coeff;
+				my $const = $a * $coeff + non_zero_random(-3,3) * $nonzero;
 				$f = Formula("$coeff * x - $const")->reduce();
 				$poly = 1;
 		} elsif($type == 2) {
 				my $base = random(2,8);
 				if ($a >= 0) {
-						my $const = $base ** $a;
+						my $const = $base ** $a + non_zero_random(-3,3) * $nonzero;
 						$f = Formula("$base ^ x") - $const;
 				} else {
-						my $const = Fraction(1, $base ** abs($a));
+						my $const = Fraction(1, $base ** abs($a + non_zero_random(-3,3)));
 						$f = Formula("$base ^ x") - $const;
 				}
 		} elsif($type == 3) {
+				$a += non_zero_random(-2,2) * $nonzero;
 				if($a == 0) {
 						$f = Formula("e^x-1");
 				} elsif($a == 1) {
@@ -62,6 +63,7 @@ sub make_zero_func {
 						$f = Formula("e^x") - Formula("e^($a)");
 				}
 		} elsif($type == 4) {
+				$a += non_zero_random(-2,2) * $nonzero;
 				my $denom = random(1,4);
 				if(random(1,2) == 1) {
 						my $const = Compute("sin(pi*$a/$denom)");
@@ -79,8 +81,20 @@ sub make_zero_func {
 
 $a = random(-4,4);
 
-($f, $fhaspoly) = make_zero_func($a, 1);
-($g, $ghaspoly) = make_zero_func($a, 1 - $fhaspoly);
+$which = random(1,10);
+$fnz = 0;
+$gnz = 0;
+if($which <= 2) {
+		$fnz = 1;
+} elsif($which <= 4) {
+		$gnz = 1;
+} elsif($which <= 5) {
+		$fnz = 1;
+		$gnz = 1;
+}
+
+($f, $fhaspoly) = make_zero_func($a, 1, $fnz);
+($g, $ghaspoly) = make_zero_func($a, 1 - $fhaspoly, $gnz);
 
 $fg = $f / $g;
 
