@@ -1,0 +1,123 @@
+##DESCRIPTION
+##  Description of problem goes here
+##ENDDESCRIPTION
+
+##KEYWORDS('keyword')
+
+## DBsubject('')
+## DBchapter('')
+## DBsection('')
+## Date('1/1/2016')
+## Author('')
+## Institution('')
+## TitleText1('')
+## EditionText1('')
+## AuthorText1('')
+## Section1('1.1')
+## Problem1('1')
+
+########################################################################
+
+DOCUMENT();      
+loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl","PGcourse.pl","PGessaymacros.pl","contextFraction.pl","specialTrigValues.pl");
+TEXT(beginproblem()); # Print problem number and point value
+$showPartialCorrectAnswers = 1; # Show which answers are correct or incorrect
+
+Context("Fraction");
+Context()->noreduce('(-x)-y');
+Context()->flags->set(limits=>[2,5], reduceConstantFunctions => 0);
+# Need to be smarter than this: ensure that we can check complicated
+# functions nested *inside* functions like roots and logarithms that
+# have restricted domain.
+
+# This isn't the only problem either, I've seen functions like
+# 7^(x^10+8^x) give the "can't generate enough valid points for
+# comparison" error.  Maybe because the numbers get too big?
+
+sub make_zero_func {
+		my ($a, $poly_ok) = @_;
+		my $f = undef;
+		my $poly = 0;
+		my $type = random(2 - 2 * $poly_ok, 4);
+		if($type <= 1) {
+				my $coeff = non_zero_random(-4,4);
+				my $const = $a * $coeff;
+				if(random(1,10) == 1) {
+						$const = $const + random(-3,3);
+				}
+				$f = Formula("$coeff * x - $const")->reduce();
+				$poly = 1;
+		} elsif($type == 2) {
+				my $base = random(2,8);
+				if ($a >= 0) {
+						my $const = $base ** $a;
+						if(random(1,10) == 1) {
+								$const = $const + random(-3,3);
+						}
+						$f = Formula("$base ^ x") - $const;
+				} else {
+						my $const = Fraction(1, $base ** abs($a));
+						$f = Formula("$base ^ x") - $const;
+				}
+		} elsif($type == 3) {
+				if(random(1,10) == 1) {
+						$a = $a + non_zero_random(-2,2);
+				}
+				if($a == 0) {
+						$f = Formula("e^x-1");
+				} elsif($a == 1) {
+						$f = Formula("e^x-e");
+				} else {
+						$f = Formula("e^x") - Formula("e^($a)");
+				}
+		} elsif($type == 4) {
+				my $denom = random(1,4);
+				if(random(1,10) == 1) {
+						$a = $a + non_zero_random(-2,2);
+				}
+				if(random(1,2) == 1) {
+						my $const = Compute("sin(pi*$a/$denom)");
+						$f = Formula("sin(pi/$denom*x)")->reduce();
+				} else {
+						my $const = Compute("cos(pi*$a/$denom)");
+						$f = Formula("cos(pi/$denom*x)")->reduce();
+				}
+				if($const != 0) {
+						$f = $f - specialRadical($const);
+				}
+		}
+		return ($f , $poly);
+}
+
+$a = random(-4,4);
+
+($f, $fhaspoly) = make_zero_func($a, 1);
+($g, $ghaspoly) = make_zero_func($a, 1 - $fhaspoly);
+
+$fg = $f / $g;
+
+$dfa = $f->eval(x=>$a);
+$dga = $g->eval(x=>$a);
+$df = $f->D('x');
+$dg = $g->D('x');
+
+while($dfa == 0 && $dga == 0) {
+  $dfa = $df->eval(x=>$a);
+  $dga = $dg->eval(x=>$a);
+	$df = $df->D('x');
+	$dg = $dg->D('x');
+}
+$lim = 0;
+if($dga == 0) {
+		$lim = String("DNE");
+} else{
+		$lim = $dfa / $dga;
+}
+
+BEGIN_PGML
+Find the limit.  If it does not exist (including [`\pm\infty`]), enter "DNE".
+
+[``\lim_{x\to [$a]} [$fg] = ``] [_______________________________________]{$lim}
+END_PGML
+
+ENDDOCUMENT();
