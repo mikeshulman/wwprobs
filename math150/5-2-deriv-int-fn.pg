@@ -139,7 +139,7 @@ if(random(1,4) == 1) {
 }
 
 BEGIN_PGML
-Find the derivative of the function [``f(x) = \int_{[$a]}^{[$b]} [$f]\,dx``]:
+Find the derivative of the function [``f(x) = \int_{[$a]}^{[$b]} [$f]\,dt``]:
 
 [``f'(x) = ``] [______]{$deriv}
 
